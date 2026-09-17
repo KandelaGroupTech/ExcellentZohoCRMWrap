@@ -14,7 +14,7 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch('/api/calls', {
+      const res = await fetch('/website-demos/excellentzohocrm/api/calls', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

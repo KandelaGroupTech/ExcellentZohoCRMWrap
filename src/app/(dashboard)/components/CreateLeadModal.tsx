@@ -17,7 +17,7 @@ export default function CreateLeadModal({ isOpen, onClose }: { isOpen: boolean, 
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch('/api/leads', {
+      const res = await fetch('/website-demos/excellentzohocrm/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

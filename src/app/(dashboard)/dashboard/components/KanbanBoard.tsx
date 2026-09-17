@@ -28,7 +28,7 @@ export default function KanbanBoard() {
   const { data: deals, isLoading, error } = useQuery({
     queryKey: ['deals'],
     queryFn: async () => {
-      const res = await fetch('/api/deals');
+      const res = await fetch('/website-demos/excellentzohocrm/api/deals');
       if (!res.ok) throw new Error('Failed to fetch deals');
       return res.json();
     }
@@ -36,7 +36,7 @@ export default function KanbanBoard() {
 
   const updateStageMutation = useMutation({
     mutationFn: async ({ dealId, stage }: { dealId: string, stage: string }) => {
-      const res = await fetch('/api/deals', {
+      const res = await fetch('/website-demos/excellentzohocrm/api/deals', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dealId, stage })

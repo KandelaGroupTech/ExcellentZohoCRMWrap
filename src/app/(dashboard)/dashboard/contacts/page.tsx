@@ -14,7 +14,7 @@ export default function ContactsPage() {
   const { data: contacts, isLoading, error } = useQuery({
     queryKey: ['contacts'],
     queryFn: async () => {
-      const res = await fetch('/api/contacts');
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts');
       if (!res.ok) throw new Error('Failed to fetch contacts');
       return res.json();
     }

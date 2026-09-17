@@ -17,7 +17,7 @@ export default function CreateContactModal({ isOpen, onClose }: { isOpen: boolea
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await fetch('/api/contacts', {
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

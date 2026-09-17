@@ -14,7 +14,7 @@ export default function LeadsPage() {
   const { data: leads, isLoading, error } = useQuery({
     queryKey: ['leads'],
     queryFn: async () => {
-      const res = await fetch('/api/leads');
+      const res = await fetch('/website-demos/excellentzohocrm/api/leads');
       if (!res.ok) throw new Error('Failed to fetch leads');
       return res.json();
     }

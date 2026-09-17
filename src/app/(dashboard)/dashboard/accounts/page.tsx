@@ -8,7 +8,7 @@ export default function AccountsPage() {
   const { data: accounts, isLoading, error } = useQuery({
     queryKey: ['accounts'],
     queryFn: async () => {
-      const res = await fetch('/api/accounts');
+      const res = await fetch('/website-demos/excellentzohocrm/api/accounts');
       if (!res.ok) throw new Error('Failed to fetch accounts');
       return res.json();
     }
