@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, CheckSquare } from 'lucide-react';
+import { Loader2, CheckSquare, ChevronRight, ChevronLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 
@@ -34,6 +34,7 @@ export default function KanbanBoard() {
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
+  const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const { data: deals, isLoading, error } = useQuery({
     queryKey: ['deals'],
@@ -142,11 +143,46 @@ export default function KanbanBoard() {
     }
   };
 
+  const toggleCollapse = (stage: string) => {
+    setCollapsedStages(prev => ({ ...prev, [stage]: !prev[stage] }));
+  };
+
   return (
     <div className="flex h-full space-x-4 overflow-x-auto pb-4">
       {STAGES.map((stage) => {
         const stageDeals = dealsByStage[stage];
         const totalAmount = stageDeals.reduce((sum, d) => sum + (d.Amount || 0), 0);
+
+        const isCollapsed = collapsedStages[stage];
+
+        if (isCollapsed) {
+          return (
+            <div 
+              key={stage} 
+              className="flex flex-col w-12 shrink-0 bg-gray-50 rounded-lg py-4 items-center justify-between border border-gray-200 transition-colors hover:bg-gray-100"
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, stage)}
+            >
+              <div className="flex flex-col items-center">
+                <span className="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800 mb-6">
+                  {stageDeals.length}
+                </span>
+                <div 
+                  className="text-sm font-medium text-gray-900 tracking-wider whitespace-nowrap" 
+                  style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+                >
+                  {stage.toUpperCase()}
+                </div>
+              </div>
+              <button 
+                onClick={() => toggleCollapse(stage)}
+                className="mt-6 p-1 text-gray-400 hover:text-gray-900 rounded bg-white shadow-sm border border-gray-200"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        }
 
         return (
           <div 
@@ -206,6 +242,15 @@ export default function KanbanBoard() {
                   Drop deals here
                 </div>
               )}
+            </div>
+            
+            <div className="mt-2 pt-2 flex justify-start">
+              <button 
+                onClick={() => toggleCollapse(stage)}
+                className="p-1 text-gray-400 hover:text-gray-900 rounded bg-white shadow-sm border border-gray-200"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
             </div>
           </div>
         );
