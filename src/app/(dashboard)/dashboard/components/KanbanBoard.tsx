@@ -16,9 +16,19 @@ const STAGES = [
   "Proposal/Price Quote",
   "Negotiation/Review",
   "Closed Won",
-  "Closed Lost",
-  "Closed Lost to Competition"
+  "Closed Lost"
 ];
+
+function formatCurrency(amount: any) {
+  if (!amount) return '$0';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+}
+
+function formatDate(dateString: string) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
 
 export default function KanbanBoard() {
   const { orgRole } = useAuth();
@@ -153,9 +163,14 @@ export default function KanbanBoard() {
                   draggable={isAdmin}
                   onDragStart={(e) => isAdmin && handleDragStart(e, deal.id)}
                   onClick={() => setSelectedDeal(deal)}
-                  className={`bg-white p-4 rounded shadow-sm border border-gray-200 transition-colors ${isAdmin ? 'hover:border-brand-red/50 cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+                  className={`bg-white p-4 rounded shadow-sm border border-gray-200 transition-colors relative ${isAdmin ? 'hover:border-brand-red/50 cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
                 >
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1">{deal.Deal_Name}</h4>
+                  {deal.Modified_Time && (
+                    <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
+                      {formatDate(deal.Modified_Time)}
+                    </span>
+                  )}
+                  <h4 className="text-sm font-semibold text-gray-900 mb-1 pr-16">{deal.Deal_Name}</h4>
                   {deal.Account_Name?.name && (
                     <p className="text-xs text-gray-500 mb-2">{deal.Account_Name.name}</p>
                   )}
