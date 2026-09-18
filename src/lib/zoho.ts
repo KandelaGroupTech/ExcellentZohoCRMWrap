@@ -146,6 +146,35 @@ async function createRecord(module: string, recordData: any) {
   throw new Error(`Failed to create ${module} in Zoho`);
 }
 
+async function deleteRecord(module: string, recordId: string) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+
+  const response = await fetch(`${domain}/crm/v6/${module}?ids=${recordId}`, {
+    method: 'DELETE',
+    headers: { 
+      'Authorization': `Zoho-oauthtoken ${token}`
+    }
+  });
+
+  const responseData = await response.json();
+  
+  if (responseData.data && responseData.data[0] && responseData.data[0].status === 'success') {
+    return true;
+  }
+
+  console.error(`Failed to delete ${module} ${recordId}:`, responseData);
+  throw new Error(`Failed to delete ${module} in Zoho`);
+}
+
+export async function deleteLead(id: string) {
+  return deleteRecord('Leads', id);
+}
+
+export async function deleteContact(id: string) {
+  return deleteRecord('Contacts', id);
+}
+
 export async function createLead(data: { First_Name: string, Last_Name: string, Company: string, Email: string, Phone: string }) {
   return createRecord('Leads', data);
 }
