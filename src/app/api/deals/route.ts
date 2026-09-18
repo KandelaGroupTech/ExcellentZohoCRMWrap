@@ -20,7 +20,6 @@ export async function GET() {
   }
 }
 
-import { clerkClient } from '@clerk/nextjs/server';
 
 export async function PUT(req: Request) {
   const authData = auth();
