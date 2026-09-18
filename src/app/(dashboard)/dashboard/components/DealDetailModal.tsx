@@ -11,9 +11,12 @@ interface DealDetailModalProps {
   deal: any;
   isOpen: boolean;
   onClose: () => void;
+  stages?: string[];
+  onUpdateStage?: (dealId: string, newStage: string) => void;
+  isUpdatingStage?: boolean;
 }
 
-export default function DealDetailModal({ deal, isOpen, onClose }: DealDetailModalProps) {
+export default function DealDetailModal({ deal, isOpen, onClose, stages = [], onUpdateStage, isUpdatingStage }: DealDetailModalProps) {
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
   const queryClient = useQueryClient();
@@ -78,7 +81,27 @@ export default function DealDetailModal({ deal, isOpen, onClose }: DealDetailMod
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="block text-gray-500 mb-1">Stage</span>
-              <span className="font-medium text-gray-900">{deal.Stage}</span>
+              {isAdmin && onUpdateStage ? (
+                <div className="relative">
+                  <select
+                    value={deal.Stage || ''}
+                    onChange={(e) => onUpdateStage(deal.id, e.target.value)}
+                    disabled={isUpdatingStage}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm disabled:opacity-50"
+                  >
+                    {stages.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  {isUpdatingStage && (
+                    <div className="absolute right-6 top-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <span className="font-medium text-gray-900">{deal.Stage}</span>
+              )}
             </div>
             <div>
               <span className="block text-gray-500 mb-1">Amount</span>

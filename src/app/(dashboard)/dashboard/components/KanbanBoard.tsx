@@ -176,6 +176,13 @@ export default function KanbanBoard() {
         deal={selectedDeal} 
         isOpen={!!selectedDeal} 
         onClose={() => setSelectedDeal(null)} 
+        stages={STAGES}
+        onUpdateStage={(dealId, stage) => {
+          updateStageMutation.mutate({ dealId, stage });
+          // Update selected deal optimistic
+          setSelectedDeal((prev: any) => prev ? { ...prev, Stage: stage } : prev);
+        }}
+        isUpdatingStage={updateStageMutation.isPending}
       />
     </div>
   );
