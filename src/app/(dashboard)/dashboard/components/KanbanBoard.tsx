@@ -159,16 +159,16 @@ export default function KanbanBoard() {
           return (
             <div 
               key={stage} 
-              className="flex flex-col w-12 shrink-0 bg-gray-50 rounded-lg py-4 items-center justify-between border border-gray-200 transition-colors hover:bg-gray-100"
+              className="flex flex-col w-12 shrink-0 bg-[#1a1a1a] rounded-xl py-4 items-center justify-between border border-[#333] transition-colors hover:bg-black shadow-lg"
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, stage)}
             >
               <div className="flex flex-col items-center">
-                <span className="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800 mb-6">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-xs font-bold text-black mb-6 shadow-sm">
                   {stageDeals.length}
                 </span>
                 <div 
-                  className="text-sm font-medium text-gray-900 tracking-wider whitespace-nowrap" 
+                  className="text-sm font-bold text-white tracking-widest whitespace-nowrap" 
                   style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
                 >
                   {stage.toUpperCase()}
@@ -176,9 +176,9 @@ export default function KanbanBoard() {
               </div>
               <button 
                 onClick={() => toggleCollapse(stage)}
-                className="mt-6 p-1 text-gray-400 hover:text-gray-900 rounded bg-white shadow-sm border border-gray-200"
+                className="mt-6 p-1 text-gray-400 hover:text-white rounded transition-colors"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           );
@@ -187,22 +187,23 @@ export default function KanbanBoard() {
         return (
           <div 
             key={stage} 
-            className="flex flex-col w-80 shrink-0 bg-gray-50 rounded-lg p-4 transition-colors hover:bg-gray-100"
+            className="flex flex-col w-80 shrink-0 bg-transparent transition-colors"
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, stage)}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-900">{stage}</h3>
-              <span className="inline-flex items-center rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+            <div className="relative mb-4">
+              <div className="w-[90%] bg-brand-red rounded-t-xl px-4 py-3 shadow-md border-b-2 border-brand-red">
+                <h3 className="text-sm font-semibold text-white truncate">{stage}</h3>
+                <div className="text-[11px] font-medium text-white/90 mt-0.5">
+                  Total: {formatCurrency(totalAmount)}
+                </div>
+              </div>
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-white text-black text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-lg border-2 border-brand-red">
                 {stageDeals.length}
-              </span>
-            </div>
-            
-            <div className="mb-4 text-xs font-medium text-gray-500">
-              Total: {formatCurrency(totalAmount)}
+              </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-3">
+            <div className="flex-1 overflow-y-auto space-y-3 px-1 custom-scrollbar">
               {stageDeals.map((deal) => {
                 const outstandingTasks = Array.isArray(allTasks) 
                   ? allTasks.filter(t => t.What_Id?.id === deal.id && t.Status !== 'Completed').length 
@@ -214,21 +215,21 @@ export default function KanbanBoard() {
                     draggable={isAdmin}
                     onDragStart={(e) => isAdmin && handleDragStart(e, deal.id)}
                     onClick={() => setSelectedDeal(deal)}
-                    className={`bg-white p-4 rounded shadow-sm border border-gray-200 transition-colors relative ${isAdmin ? 'hover:border-brand-red/50 cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+                    className={`bg-white p-4 rounded-md shadow-md border border-gray-100 transition-all relative ${isAdmin ? 'hover:border-brand-red/50 hover:shadow-lg cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
                   >
                     {deal.Modified_Time && (
                       <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
                         {formatDate(deal.Modified_Time)}
                       </span>
                     )}
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1 pr-16">{deal.Deal_Name}</h4>
+                    <h4 className="text-sm font-bold text-gray-900 mb-2 pr-16">{deal.Deal_Name}</h4>
                     {deal.Account_Name?.name && (
-                      <p className="text-xs text-gray-500 mb-2">{deal.Account_Name.name}</p>
+                      <p className="text-xs text-gray-600 mb-3">{deal.Account_Name.name}</p>
                     )}
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
-                      <span className="text-sm font-medium text-gray-900">{formatCurrency(deal.Amount)}</span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
                       {outstandingTasks > 0 && (
-                        <div className="flex items-center bg-brand-red/10 text-brand-red px-2 py-0.5 rounded text-xs font-medium" title={`${outstandingTasks} outstanding to-do${outstandingTasks > 1 ? 's' : ''}`}>
+                        <div className="flex items-center bg-brand-red/10 text-brand-red px-2 py-0.5 rounded text-xs font-bold" title={`${outstandingTasks} outstanding to-do${outstandingTasks > 1 ? 's' : ''}`}>
                           <CheckSquare className="w-3 h-3 mr-1" />
                           {outstandingTasks}
                         </div>
@@ -238,18 +239,18 @@ export default function KanbanBoard() {
                 );
               })}
               {stageDeals.length === 0 && (
-                <div className="text-center p-4 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded">
+                <div className="text-center p-4 text-sm text-gray-400 border-2 border-dashed border-gray-600 rounded-md">
                   Drop deals here
                 </div>
               )}
             </div>
             
-            <div className="mt-2 pt-2 flex justify-start">
+            <div className="mt-4 pt-2 flex justify-start pl-1">
               <button 
                 onClick={() => toggleCollapse(stage)}
-                className="p-1 text-gray-400 hover:text-gray-900 rounded bg-white shadow-sm border border-gray-200"
+                className="p-1 text-gray-400 hover:text-white rounded transition-colors"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
             </div>
           </div>
