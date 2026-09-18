@@ -26,7 +26,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     queryKey: ['tasks', deal?.id],
     queryFn: async () => {
       if (!deal?.id) return [];
-      const res = await fetch(`/api/deals/${deal.id}/tasks`);
+      const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/tasks`);
       if (!res.ok) throw new Error('Failed to fetch tasks');
       return res.json();
     },
@@ -63,7 +63,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
 
   const createTaskMutation = useMutation({
     mutationFn: async (subject: string) => {
-      const res = await fetch(`/api/deals/${deal.id}/tasks`, {
+      const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Subject: subject })
@@ -83,7 +83,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
 
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, status }: { taskId: string, status: string }) => {
-      const res = await fetch(`/api/tasks/${taskId}`, {
+      const res = await fetch(`/website-demos/excellentzohocrm/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
