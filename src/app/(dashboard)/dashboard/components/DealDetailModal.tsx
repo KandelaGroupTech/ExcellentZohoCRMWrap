@@ -43,7 +43,10 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, initials })
       });
-      if (!res.ok) throw new Error('Failed to create note');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create note');
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -51,8 +54,8 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
       setNewNoteContent('');
       toast.success('Note added successfully');
     },
-    onError: () => {
-      toast.error('Failed to add note');
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to add note');
     }
   });
 
