@@ -61,7 +61,7 @@ export default function DashboardLayout({
         </nav>
         <div className="p-4 border-t border-gray-800 flex items-center gap-3">
           <OrganizationSwitcher 
-            hidePersonal={false}
+            hidePersonal={true}
             appearance={{
               elements: {
                 organizationSwitcherTrigger: "text-white",
