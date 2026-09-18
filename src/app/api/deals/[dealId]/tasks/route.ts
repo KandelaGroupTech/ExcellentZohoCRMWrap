@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { fetchTasksForDeal, createTask } from '@/lib/zoho';
 
 export async function GET(req: Request, { params }: { params: { dealId: string } }) {
@@ -17,7 +17,15 @@ export async function GET(req: Request, { params }: { params: { dealId: string }
 export async function POST(req: Request, { params }: { params: { dealId: string } }) {
   const { userId, orgRole } = auth();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (orgRole !== 'org:admin') return NextResponse.json({ error: 'Forbidden: Admins only' }, { status: 403 });
+  let isAdmin = orgRole === 'org:admin';
+  if (!isAdmin && userId) {
+    try {
+      const client = await clerkClient();
+      const memberships = await client.users.getOrganizationMembershipList({ userId });
+      isAdmin = memberships.data.some((m: any) => m.role === 'org:admin');
+    } catch (e) {}
+  }
+  if (!isAdmin) return NextResponse.json({ error: 'Forbidden: Admins only. Please select an Organization in the sidebar.' }, { status: 403 });
 
   try {
     const data = await req.json();
