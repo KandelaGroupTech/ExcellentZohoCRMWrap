@@ -288,7 +288,10 @@ export async function createNote(data: { Parent_Id: string, Note_Content: string
     data: [{
       Note_Title: data.Note_Title,
       Note_Content: data.Note_Content,
-      Parent_Id: { id: data.Parent_Id },
+      Parent_Id: {
+        id: data.Parent_Id,
+        module: { api_name: 'Deals' }
+      },
       se_module: 'Deals'
     }]
   };
@@ -308,6 +311,8 @@ export async function createNote(data: { Parent_Id: string, Note_Content: string
     return responseData.data[0].details;
   }
 
-  console.error('Failed to create note:', responseData);
-  throw new Error('Failed to create note in Zoho');
+  // Surface the real Zoho error
+  const zohoError = responseData.data?.[0]?.message || responseData.message || JSON.stringify(responseData);
+  console.error('Failed to create note, Zoho response:', JSON.stringify(responseData));
+  throw new Error(`Zoho error: ${zohoError}`);
 }
