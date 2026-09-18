@@ -22,7 +22,7 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="flex h-screen bg-[#262626] overflow-hidden">
+    <div className="flex h-screen bg-[#3d3d3d] overflow-hidden">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
