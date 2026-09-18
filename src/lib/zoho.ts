@@ -55,7 +55,7 @@ export async function fetchDeals() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
 
-  const fields = 'Deal_Name,Amount,Stage,Account_Name,Contact_Name,Closing_Date,Probability,Expected_Revenue,Next_Step,Lead_Source,Type,Description,Reason_For_Loss__s';
+  const fields = 'Deal_Name,Amount,Stage,Account_Name,Contact_Name,Closing_Date,Probability,Expected_Revenue,Next_Step,Lead_Source,Type,Description,Reason_For_Loss__s,Modified_Time';
   const response = await fetch(`${domain}/crm/v6/Deals?fields=${fields}`, {
     method: 'GET',
     headers: {
