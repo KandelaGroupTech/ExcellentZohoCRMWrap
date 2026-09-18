@@ -251,6 +251,22 @@ export async function fetchTasksForDeal(dealId: string) {
   return data.data || [];
 }
 
+export async function fetchTasks() {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  
+  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+
+  if (response.status === 204) return [];
+  if (!response.ok) throw new Error('Failed to fetch tasks');
+  const data = await response.json();
+  return data.data || [];
+}
+
 export async function createTask(data: { Subject: string, What_Id: string }) {
   return createRecord('Tasks', { 
     Subject: data.Subject, 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 
@@ -42,6 +42,16 @@ export default function KanbanBoard() {
       if (!res.ok) throw new Error('Failed to fetch deals');
       return res.json();
     }
+  });
+
+  const { data: allTasks } = useQuery({
+    queryKey: ['all-tasks'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/tasks');
+      if (!res.ok) throw new Error('Failed to fetch tasks');
+      return res.json();
+    },
+    enabled: !!deals
   });
 
   const updateStageMutation = useMutation({
@@ -157,28 +167,40 @@ export default function KanbanBoard() {
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-3">
-              {stageDeals.map((deal) => (
-                <div 
-                  key={deal.id} 
-                  draggable={isAdmin}
-                  onDragStart={(e) => isAdmin && handleDragStart(e, deal.id)}
-                  onClick={() => setSelectedDeal(deal)}
-                  className={`bg-white p-4 rounded shadow-sm border border-gray-200 transition-colors relative ${isAdmin ? 'hover:border-brand-red/50 cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
-                >
-                  {deal.Modified_Time && (
-                    <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
-                      {formatDate(deal.Modified_Time)}
-                    </span>
-                  )}
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1 pr-16">{deal.Deal_Name}</h4>
-                  {deal.Account_Name?.name && (
-                    <p className="text-xs text-gray-500 mb-2">{deal.Account_Name.name}</p>
-                  )}
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-sm font-medium text-gray-900">{formatCurrency(deal.Amount)}</span>
+              {stageDeals.map((deal) => {
+                const outstandingTasks = Array.isArray(allTasks) 
+                  ? allTasks.filter(t => t.What_Id?.id === deal.id && t.Status !== 'Completed').length 
+                  : 0;
+
+                return (
+                  <div 
+                    key={deal.id} 
+                    draggable={isAdmin}
+                    onDragStart={(e) => isAdmin && handleDragStart(e, deal.id)}
+                    onClick={() => setSelectedDeal(deal)}
+                    className={`bg-white p-4 rounded shadow-sm border border-gray-200 transition-colors relative ${isAdmin ? 'hover:border-brand-red/50 cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+                  >
+                    {deal.Modified_Time && (
+                      <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
+                        {formatDate(deal.Modified_Time)}
+                      </span>
+                    )}
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1 pr-16">{deal.Deal_Name}</h4>
+                    {deal.Account_Name?.name && (
+                      <p className="text-xs text-gray-500 mb-2">{deal.Account_Name.name}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                      <span className="text-sm font-medium text-gray-900">{formatCurrency(deal.Amount)}</span>
+                      {outstandingTasks > 0 && (
+                        <div className="flex items-center bg-brand-red/10 text-brand-red px-2 py-0.5 rounded text-xs font-medium" title={`${outstandingTasks} outstanding to-do${outstandingTasks > 1 ? 's' : ''}`}>
+                          <CheckSquare className="w-3 h-3 mr-1" />
+                          {outstandingTasks}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {stageDeals.length === 0 && (
                 <div className="text-center p-4 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded">
                   Drop deals here
