@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, CheckSquare, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Loader2, CheckSquare, ChevronRight, ChevronLeft, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 
@@ -35,6 +35,7 @@ export default function KanbanBoard() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const isAdmin = orgRole === 'org:admin';
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
 
@@ -127,8 +128,16 @@ export default function KanbanBoard() {
     );
   }
 
+  const filteredDeals = deals?.filter((d: any) => {
+    if (!searchQuery) return true;
+    const lowerQuery = searchQuery.toLowerCase();
+    const dealName = (d.Deal_Name || '').toLowerCase();
+    const accountName = (d.Account_Name?.name || '').toLowerCase();
+    return dealName.includes(lowerQuery) || accountName.includes(lowerQuery);
+  }) || [];
+
   const dealsByStage = STAGES.reduce((acc, stage) => {
-    acc[stage] = deals?.filter((d: any) => d.Stage === stage) || [];
+    acc[stage] = filteredDeals.filter((d: any) => d.Stage === stage);
     return acc;
   }, {} as Record<string, any[]>);
 
@@ -167,8 +176,23 @@ export default function KanbanBoard() {
   };
 
   return (
-    <div className="flex h-full space-x-4 overflow-x-auto pb-4">
-      {STAGES.map((stage) => {
+    <div className="flex flex-col h-full">
+      <div className="mb-4 flex-shrink-0">
+        <div className="relative max-w-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-red focus:border-brand-red sm:text-sm"
+            placeholder="Search deals by name or account..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="flex h-full space-x-4 overflow-x-auto pb-4 custom-scrollbar">
+        {STAGES.map((stage) => {
         const stageDeals = dealsByStage[stage];
         const totalAmount = stageDeals.reduce((sum, d) => sum + (d.Amount || 0), 0);
 
@@ -289,6 +313,7 @@ export default function KanbanBoard() {
         }}
         isUpdatingStage={updateStageMutation.isPending}
       />
+    </div>
     </div>
   );
 }
