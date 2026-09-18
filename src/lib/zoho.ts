@@ -268,9 +268,9 @@ export async function fetchNotesForDeal(dealId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const response = await fetch(${domain}/crm/v6/Deals//Notes, {
+  const response = await fetch(`${domain}/crm/v6/Deals/${dealId}/Notes`, {
     method: 'GET',
-    headers: { 'Authorization': Zoho-oauthtoken  },
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
   });
 

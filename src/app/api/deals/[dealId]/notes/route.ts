@@ -41,7 +41,7 @@ export async function POST(req: Request, { params }: { params: { dealId: string 
     const { content, initials } = await req.json();
     if (!content) return NextResponse.json({ error: 'Missing content' }, { status: 400 });
 
-    const noteTitle = initials ? Note from  : 'Note';
+    const noteTitle = initials ? `Note from ${initials}` : 'Note';
 
     const result = await createNote({
       Parent_Id: params.dealId,

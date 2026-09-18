@@ -22,7 +22,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const queryClient = useQueryClient();
   const [newTaskSubject, setNewTaskSubject] = useState('');
   const { user } = useUser();
-  const initials = user ? ${user.firstName?.charAt(0) || ''}.toUpperCase() : '';
+  const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
   const [newNoteContent, setNewNoteContent] = useState('');
 
   const { data: notes, isLoading: isLoadingNotes } = useQuery({
