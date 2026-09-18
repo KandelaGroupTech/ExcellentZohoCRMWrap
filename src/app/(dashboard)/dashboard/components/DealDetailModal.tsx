@@ -73,6 +73,17 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     enabled: !!deal?.id && isOpen
   });
 
+  const { data: contactDetails, isLoading: isLoadingContact } = useQuery({
+    queryKey: ['contact', deal?.Contact_Name?.id],
+    queryFn: async () => {
+      if (!deal?.Contact_Name?.id) return null;
+      const res = await fetch(`/website-demos/excellentzohocrm/api/contacts/${deal.Contact_Name.id}`);
+      if (!res.ok) throw new Error('Failed to fetch contact details');
+      return res.json();
+    },
+    enabled: !!deal?.Contact_Name?.id && isOpen
+  });
+
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -181,6 +192,35 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
               <div className="col-span-2">
                 <span className="block text-gray-500 mb-1">Account</span>
                 <span className="font-medium text-gray-900">{deal.Account_Name.name}</span>
+              </div>
+            )}
+            {(deal.Contact_Name?.name || contactDetails) && (
+              <div className="col-span-2 pt-2 border-t border-gray-200 mt-2">
+                <span className="block text-gray-500 mb-1">Contact</span>
+                {isLoadingContact ? (
+                  <div className="flex items-center text-gray-400">
+                    <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                    Loading contact details...
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="font-medium text-gray-900">{deal.Contact_Name?.name}</div>
+                    {contactDetails?.Phone && (
+                      <div className="text-gray-600">
+                        <a href={`tel:${contactDetails.Phone}`} className="hover:text-brand-red transition-colors">
+                          {contactDetails.Phone}
+                        </a>
+                      </div>
+                    )}
+                    {contactDetails?.Email && (
+                      <div className="text-gray-600">
+                        <a href={`mailto:${contactDetails.Email}`} className="hover:text-brand-red transition-colors">
+                          {contactDetails.Email}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

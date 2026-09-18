@@ -105,6 +105,22 @@ export async function fetchContacts() {
   return data.data || [];
 }
 
+export async function fetchContact(id: string) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  
+  const fields = 'First_Name,Last_Name,Account_Name,Email,Phone,Title';
+  const response = await fetch(`${domain}/crm/v6/Contacts/${id}?fields=${fields}`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+
+  if (!response.ok) throw new Error('Failed to fetch contact from Zoho');
+  const data = await response.json();
+  return data.data?.[0] || null;
+}
+
 export async function fetchAccounts() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';

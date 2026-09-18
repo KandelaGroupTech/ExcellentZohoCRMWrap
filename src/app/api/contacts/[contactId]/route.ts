@@ -26,3 +26,16 @@ export async function DELETE(req: Request, { params }: { params: { contactId: st
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function GET(req: Request, { params }: { params: { contactId: string } }) {
+  const { userId } = auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { fetchContact } = await import('@/lib/zoho');
+    const contact = await fetchContact(params.contactId);
+    return NextResponse.json(contact);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
