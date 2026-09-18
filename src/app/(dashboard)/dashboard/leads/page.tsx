@@ -15,7 +15,7 @@ export default function LeadsPage() {
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: async (leadId: string) => {
-      const res = await fetch(/website-demos/excellentzohocrm/api/leads/ + leadId, {
+      const res = await fetch('/website-demos/excellentzohocrm/api/leads/' + leadId, {
         method: 'DELETE'
       });
       if (!res.ok) {

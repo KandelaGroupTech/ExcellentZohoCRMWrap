@@ -15,7 +15,7 @@ export default function ContactsPage() {
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: async (contactId: string) => {
-      const res = await fetch(/website-demos/excellentzohocrm/api/contacts/ + contactId, {
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts/' + contactId, {
         method: 'DELETE'
       });
       if (!res.ok) {
