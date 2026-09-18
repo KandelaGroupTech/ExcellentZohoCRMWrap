@@ -47,24 +47,24 @@ export default function CreateContactModal({ isOpen, onClose }: { isOpen: boolea
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">First Name</label>
-            <input required type="text" value={formData.First_Name} onChange={e => setFormData({...formData, First_Name: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+            <input required type="text" value={formData.First_Name} onChange={e => setFormData({...formData, First_Name: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Last Name</label>
-            <input required type="text" value={formData.Last_Name} onChange={e => setFormData({...formData, Last_Name: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+            <input required type="text" value={formData.Last_Name} onChange={e => setFormData({...formData, Last_Name: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Account Name (Optional)</label>
-          <input type="text" value={formData.Account_Name} onChange={e => setFormData({...formData, Account_Name: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+          <input type="text" value={formData.Account_Name} onChange={e => setFormData({...formData, Account_Name: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" value={formData.Email} onChange={e => setFormData({...formData, Email: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+          <input type="email" value={formData.Email} onChange={e => setFormData({...formData, Email: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Phone</label>
-          <input type="tel" value={formData.Phone} onChange={e => setFormData({...formData, Phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+          <input type="tel" value={formData.Phone} onChange={e => setFormData({...formData, Phone: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
         
         {createMutation.isError && <p className="text-red-600 text-sm">Error creating contact.</p>}

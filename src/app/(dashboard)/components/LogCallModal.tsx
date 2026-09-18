@@ -42,11 +42,11 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Subject</label>
-          <input required type="text" value={formData.Subject} onChange={e => setFormData({...formData, Subject: e.target.value})} placeholder="e.g. Initial Outreach" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+          <input required type="text" value={formData.Subject} onChange={e => setFormData({...formData, Subject: e.target.value})} placeholder="e.g. Initial Outreach" className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Call Purpose</label>
-          <select value={formData.Call_Purpose} onChange={e => setFormData({...formData, Call_Purpose: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border">
+          <select value={formData.Call_Purpose} onChange={e => setFormData({...formData, Call_Purpose: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border">
             <option value="">Select Purpose...</option>
             <option value="Prospecting">Prospecting</option>
             <option value="Administrative">Administrative</option>
@@ -58,7 +58,7 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Description / Notes</label>
-          <textarea rows={3} value={formData.Description} onChange={e => setFormData({...formData, Description: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+          <textarea rows={3} value={formData.Description} onChange={e => setFormData({...formData, Description: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
         
         {createMutation.isError && <p className="text-red-600 text-sm">Error logging call.</p>}
