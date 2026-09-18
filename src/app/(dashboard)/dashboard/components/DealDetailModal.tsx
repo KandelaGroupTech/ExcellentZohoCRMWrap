@@ -25,7 +25,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
   const [newNoteContent, setNewNoteContent] = useState('');
 
-  const { data: notes, isLoading: isLoadingNotes } = useQuery({
+  const { data: notes, isLoading: isLoadingNotes, isError: isErrorNotes, error: errorNotes } = useQuery({
     queryKey: ['notes', deal?.id],
     queryFn: async () => {
       if (!deal?.id) return [];
@@ -250,9 +250,13 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
               <div className="flex justify-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-brand-red" />
               </div>
-            ) : (
+            ) : isErrorNotes ? (
+              <div className="p-4 text-sm text-red-600 bg-red-50 rounded-md mb-4 border border-red-200">
+                Failed to load notes: {errorNotes?.message || 'Unknown error'}
+              </div>
+            ) : Array.isArray(notes) ? (
               <div className="space-y-4 max-h-60 overflow-y-auto pr-2 mb-4">
-                {notes?.map((note: any) => (
+                {notes.map((note: any) => (
                   <div key={note.id} className="bg-yellow-50 border border-yellow-200 rounded-md p-3 relative">
                     <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.Note_Content}</p>
                     <div className="mt-2 flex justify-between items-center text-[10px] text-gray-500">
@@ -261,9 +265,13 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                     </div>
                   </div>
                 ))}
-                {notes?.length === 0 && (
+                {notes.length === 0 && (
                   <p className="text-sm text-gray-500 text-center py-2">No notes added yet.</p>
                 )}
+              </div>
+            ) : (
+              <div className="p-4 text-sm text-red-600 bg-red-50 rounded-md mb-4 border border-red-200">
+                Failed to load notes: {notes?.error || JSON.stringify(notes)}
               </div>
             )}
 

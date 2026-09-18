@@ -275,7 +275,11 @@ export async function fetchNotesForDeal(dealId: string) {
   });
 
   if (response.status === 204) return [];
-  if (!response.ok) throw new Error('Failed to fetch notes for deal');
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error('Failed to fetch notes, response:', errText);
+    throw new Error(`Zoho API Error: ${errText}`);
+  }
   const data = await response.json();
   return data.data || [];
 }
