@@ -41,7 +41,10 @@ export default function KanbanBoard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dealId, stage })
       });
-      if (!res.ok) throw new Error('Failed to update deal stage');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update deal stage');
+      }
       return res.json();
     },
     onMutate: async (variables) => {
@@ -67,7 +70,7 @@ export default function KanbanBoard() {
       if (context?.previousDeals) {
         queryClient.setQueryData(['deals'], context.previousDeals);
       }
-      toast.error("Failed to update deal stage.");
+      toast.error(err.message || "Failed to update deal stage.");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
