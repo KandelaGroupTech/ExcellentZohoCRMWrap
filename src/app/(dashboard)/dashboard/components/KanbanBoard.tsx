@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, CheckSquare, ChevronRight, ChevronLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 
-import { useAuth } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 
 const STAGES = [
   "Qualification",
@@ -32,10 +32,18 @@ function formatDate(dateString: string) {
 
 export default function KanbanBoard() {
   const { orgRole } = useAuth();
+  const { user, isLoaded: isUserLoaded } = useUser();
   const isAdmin = orgRole === 'org:admin';
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
   const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isUserLoaded && user && user.unsafeMetadata?.collapsedStages) {
+      setCollapsedStages(user.unsafeMetadata.collapsedStages as Record<string, boolean>);
+    }
+  }, [isUserLoaded, user]);
+
   const { data: deals, isLoading, error } = useQuery({
     queryKey: ['deals'],
     queryFn: async () => {
@@ -143,8 +151,22 @@ export default function KanbanBoard() {
     }
   };
 
-  const toggleCollapse = (stage: string) => {
-    setCollapsedStages(prev => ({ ...prev, [stage]: !prev[stage] }));
+  const toggleCollapse = async (stage: string) => {
+    const newState = { ...collapsedStages, [stage]: !collapsedStages[stage] };
+    setCollapsedStages(newState); // Optimistic UI update
+
+    if (user) {
+      try {
+        await user.update({
+          unsafeMetadata: {
+            ...user.unsafeMetadata,
+            collapsedStages: newState
+          }
+        });
+      } catch (err) {
+        console.error("Failed to save collapsed state to Clerk", err);
+      }
+    }
   };
 
   return (
