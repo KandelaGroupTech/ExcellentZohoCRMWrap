@@ -35,29 +35,19 @@ export default function KanbanBoard() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const isAdmin = orgRole === 'org:admin';
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
-  const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('kanban_collapsed_stages');
-        if (saved) return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return {};
-  });
+  const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (isUserLoaded && user && user.unsafeMetadata?.collapsedStages) {
-      const remoteStages = user.unsafeMetadata.collapsedStages as Record<string, boolean>;
-      setCollapsedStages(prev => {
-        const merged = { ...prev, ...remoteStages };
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('kanban_collapsed_stages', JSON.stringify(merged));
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kanban_collapsed_stages');
+        if (saved) {
+          setCollapsedStages(JSON.parse(saved));
         }
-        return merged;
-      });
+      } catch (e) {}
     }
-  }, [isUserLoaded, user]);
+  }, []);
 
   const { data: deals, isLoading, error } = useQuery({
     queryKey: ['deals'],
@@ -166,25 +156,14 @@ export default function KanbanBoard() {
     }
   };
 
-  const toggleCollapse = async (stage: string) => {
-    const newState = { ...collapsedStages, [stage]: !collapsedStages[stage] };
-    setCollapsedStages(newState); // Optimistic UI update
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('kanban_collapsed_stages', JSON.stringify(newState));
-    }
-
-    if (user) {
-      try {
-        await user.update({
-          unsafeMetadata: {
-            ...user.unsafeMetadata,
-            collapsedStages: newState
-          }
-        });
-      } catch (err) {
-        console.error("Failed to save collapsed state to Clerk", err);
+  const toggleCollapse = (stage: string) => {
+    setCollapsedStages(prev => {
+      const newState = { ...prev, [stage]: !prev[stage] };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('kanban_collapsed_stages', JSON.stringify(newState));
       }
-    }
+      return newState;
+    });
   };
 
   return (
