@@ -30,7 +30,10 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     queryFn: async () => {
       if (!deal?.id) return [];
       const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/notes`);
-      if (!res.ok) throw new Error('Failed to fetch notes');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to fetch notes');
+      }
       return res.json();
     },
     enabled: !!deal?.id && isOpen
