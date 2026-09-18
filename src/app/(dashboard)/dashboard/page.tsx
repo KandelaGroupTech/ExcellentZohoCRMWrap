@@ -14,7 +14,7 @@ export default function DashboardIndex() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-medium text-gray-100">Pipeline</h2>
+        <h2 className="text-xl font-bold text-gray-900">Pipeline</h2>
         {isAdmin && (
           <button onClick={() => setIsModalOpen(true)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90">
             <Plus className="h-4 w-4 mr-2" />
