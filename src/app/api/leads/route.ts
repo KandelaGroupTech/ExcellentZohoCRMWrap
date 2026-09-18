@@ -17,7 +17,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const { userId, orgRole } = auth();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (orgRole !== 'org:admin') return NextResponse.json({ error: 'Forbidden: Admins only' }, { status: 403 });
+  if (orgRole !== 'org:admin') return NextResponse.json({ error: 'Forbidden: Admins only. Please select an Organization in the sidebar.' }, { status: 403 });
 
   try {
     const data = await req.json();

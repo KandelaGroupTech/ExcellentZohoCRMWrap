@@ -22,7 +22,10 @@ export default function CreateLeadModal({ isOpen, onClose }: { isOpen: boolean, 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (!res.ok) throw new Error('Failed to create lead');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to create lead');
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -31,8 +34,8 @@ export default function CreateLeadModal({ isOpen, onClose }: { isOpen: boolean, 
       setFormData({ First_Name: '', Last_Name: '', Company: '', Email: '', Phone: '' });
       toast.success('Lead created successfully!');
     },
-    onError: () => {
-      toast.error('Failed to create lead.');
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to create lead.');
     }
   });
 
@@ -67,7 +70,7 @@ export default function CreateLeadModal({ isOpen, onClose }: { isOpen: boolean, 
           <input type="tel" value={formData.Phone} onChange={e => setFormData({...formData, Phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
         
-        {createMutation.isError && <p className="text-red-600 text-sm">Error creating lead.</p>}
+        {createMutation.isError && <p className="text-red-600 text-sm">{createMutation.error?.message || 'Error creating lead.'}</p>}
         
         <div className="flex justify-end pt-4">
           <button type="button" onClick={onClose} className="mr-3 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">Cancel</button>

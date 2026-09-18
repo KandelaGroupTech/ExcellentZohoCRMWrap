@@ -87,7 +87,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                     value={deal.Stage || ''}
                     onChange={(e) => onUpdateStage(deal.id, e.target.value)}
                     disabled={isUpdatingStage}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm disabled:opacity-50"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm disabled:opacity-50 text-gray-900 bg-white"
                   >
                     {stages.map((s) => (
                       <option key={s} value={s}>{s}</option>
