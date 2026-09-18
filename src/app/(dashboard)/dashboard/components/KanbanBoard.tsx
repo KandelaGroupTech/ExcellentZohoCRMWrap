@@ -35,12 +35,27 @@ export default function KanbanBoard() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const isAdmin = orgRole === 'org:admin';
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
-  const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
+  const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('kanban_collapsed_stages');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return {};
+  });
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (isUserLoaded && user && user.unsafeMetadata?.collapsedStages) {
-      setCollapsedStages(user.unsafeMetadata.collapsedStages as Record<string, boolean>);
+      const remoteStages = user.unsafeMetadata.collapsedStages as Record<string, boolean>;
+      setCollapsedStages(prev => {
+        const merged = { ...prev, ...remoteStages };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kanban_collapsed_stages', JSON.stringify(merged));
+        }
+        return merged;
+      });
     }
   }, [isUserLoaded, user]);
 
@@ -154,6 +169,9 @@ export default function KanbanBoard() {
   const toggleCollapse = async (stage: string) => {
     const newState = { ...collapsedStages, [stage]: !collapsedStages[stage] };
     setCollapsedStages(newState); // Optimistic UI update
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kanban_collapsed_stages', JSON.stringify(newState));
+    }
 
     if (user) {
       try {
