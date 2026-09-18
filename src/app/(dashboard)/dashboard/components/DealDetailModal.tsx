@@ -37,7 +37,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(/website-demos/excellentzohocrm/api/deals/ + deal.id, {
+      const res = await fetch('/website-demos/excellentzohocrm/api/deals/' + deal.id, {
         method: 'DELETE'
       });
       if (!res.ok) {
