@@ -281,10 +281,33 @@ export async function fetchNotesForDeal(dealId: string) {
 }
 
 export async function createNote(data: { Parent_Id: string, Note_Content: string, Note_Title: string }) {
-  return createRecord('Notes', { 
-    Note_Title: data.Note_Title, 
-    Note_Content: data.Note_Content,
-    Parent_Id: data.Parent_Id,
-    se_module: 'Deals'
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+
+  const payload = {
+    data: [{
+      Note_Title: data.Note_Title,
+      Note_Content: data.Note_Content,
+      Parent_Id: { id: data.Parent_Id },
+      se_module: 'Deals'
+    }]
+  };
+
+  const response = await fetch(`${domain}/crm/v6/Notes`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Zoho-oauthtoken ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
   });
+
+  const responseData = await response.json();
+
+  if (responseData.data && responseData.data[0] && responseData.data[0].status === 'success') {
+    return responseData.data[0].details;
+  }
+
+  console.error('Failed to create note:', responseData);
+  throw new Error('Failed to create note in Zoho');
 }
