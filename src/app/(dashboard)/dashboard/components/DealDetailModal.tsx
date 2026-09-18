@@ -29,7 +29,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     queryKey: ['notes', deal?.id],
     queryFn: async () => {
       if (!deal?.id) return [];
-      const res = await fetch(\/website-demos/excellentzohocrm/api/deals/\/notes\);
+      const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/notes`);
       if (!res.ok) throw new Error('Failed to fetch notes');
       return res.json();
     },
@@ -38,7 +38,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
 
   const createNoteMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await fetch(\/website-demos/excellentzohocrm/api/deals/\/notes\, {
+      const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, initials })
