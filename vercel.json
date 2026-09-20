@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/website-demos/excellentzohocrm/dashboard",
+      "permanent": false
+    }
+  ]
+}
