@@ -1,8 +1,19 @@
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export default function HomePage() {
+  const { userId } = auth();
+
+  // If the user is already signed in, immediately redirect to the dashboard.
+  // This catches the case where Clerk's Account Portal drops users at the
+  // root URL after sign-up/sign-in instead of the dashboard subfolder.
+  if (userId) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-gray-50">
       <main className="max-w-2xl flex flex-col items-center gap-6">
