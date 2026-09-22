@@ -249,7 +249,7 @@ export default function KanbanBoard() {
             <div className="flex-1 overflow-y-auto space-y-3 px-1 custom-scrollbar">
               {stageDeals.map((deal) => {
                 const outstandingTasks = Array.isArray(allTasks) 
-                  ? allTasks.filter(t => t.What_Id?.id === deal.id && t.Status !== 'Completed').length 
+                  ? allTasks.filter(t => (t.What_Id?.id === deal.id || t.SEMODULE_ID === deal.id) && t.Status !== 'Completed').length 
                   : 0;
 
                 return (

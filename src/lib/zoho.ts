@@ -322,30 +322,39 @@ export async function fetchTasksForDeal(dealId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const response = await fetch(`${domain}/crm/v6/Tasks/search?criteria=(What_Id:equals:${dealId})`, {
+  const response = await fetch(`${domain}/crm/v6/Tasks/search?criteria=((SE_Module:equals:Deals)and(SEMODULE_ID:equals:${dealId}))`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
   });
-
-  if (response.status === 204) return [];
-  if (!response.ok) throw new Error('Failed to fetch tasks for deal');
+  
+  if (!response.ok) {
+    if (response.status === 204) return [];
+    const text = await response.text();
+    throw new Error(`Failed to fetch tasks: ${response.status} ${text}`);
+  }
+  
   const data = await response.json();
-  return data.data || [];
+  // Filter locally just to be absolutely sure we only get Deals tasks, in case SEMODULE_ID isn't unique
+  return (data.data || []).filter((t: any) => t.SE_Module === 'Deals' || t.$se_module === 'Deals');
 }
 
 export async function fetchTasks() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id`, {
+  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id,SEMODULE_ID,SE_Module`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
   });
-
-  if (response.status === 204) return [];
-  if (!response.ok) throw new Error('Failed to fetch tasks');
+  
+  if (!response.ok) {
+    if (response.status === 204) return [];
+    const text = await response.text();
+    throw new Error(`Failed to fetch all tasks: ${response.status} ${text}`);
+  }
+  
   const data = await response.json();
   return data.data || [];
 }
@@ -353,8 +362,8 @@ export async function fetchTasks() {
 export async function createTask(data: { Subject: string, What_Id: string }) {
   return createRecord('Tasks', { 
     Subject: data.Subject, 
-    What_Id: { id: data.What_Id },
-    $se_module: 'Deals',
+    SE_Module: 'Deals',
+    SEMODULE_ID: data.What_Id,
     Status: 'Not Started'
   });
 }
