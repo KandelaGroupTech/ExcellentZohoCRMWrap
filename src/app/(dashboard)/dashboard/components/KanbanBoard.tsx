@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, CheckSquare, ChevronRight, ChevronLeft, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -38,6 +38,8 @@ export default function KanbanBoard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
+  const touchDragDealId = useRef<string | null>(null);
+  const touchDragGhost = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -174,6 +176,66 @@ export default function KanbanBoard() {
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent, dealId: string) => {
+    touchDragDealId.current = dealId;
+    // Create a ghost element to follow the finger
+    const ghost = document.createElement('div');
+    ghost.style.cssText = `
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.8;
+      background: white;
+      border: 2px solid #dc2626;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `;
+    const deal = deals?.find((d: any) => d.id === dealId);
+    ghost.textContent = deal?.Deal_Name || 'Deal';
+    document.body.appendChild(ghost);
+    touchDragGhost.current = ghost;
+    const touch = e.touches[0];
+    ghost.style.left = `${touch.clientX - 100}px`;
+    ghost.style.top = `${touch.clientY - 20}px`;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchDragDealId.current) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    if (touchDragGhost.current) {
+      touchDragGhost.current.style.left = `${touch.clientX - 100}px`;
+      touchDragGhost.current.style.top = `${touch.clientY - 20}px`;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchDragDealId.current) return;
+    // Remove ghost
+    if (touchDragGhost.current) {
+      document.body.removeChild(touchDragGhost.current);
+      touchDragGhost.current = null;
+    }
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const stageEl = el?.closest('[data-stage]');
+    const targetStage = stageEl?.getAttribute('data-stage');
+    if (targetStage) {
+      const deal = deals?.find((d: any) => d.id === touchDragDealId.current);
+      if (deal && deal.Stage !== targetStage) {
+        updateStageMutation.mutate({ dealId: touchDragDealId.current!, stage: targetStage });
+      }
+    }
+    touchDragDealId.current = null;
+  };
+
   const toggleCollapse = (stage: string) => {
     setCollapsedStages(prev => {
       const newState = { ...prev, [stage]: !prev[stage] };
@@ -211,6 +273,7 @@ export default function KanbanBoard() {
           return (
             <div 
               key={stage} 
+              data-stage={stage}
               className="flex flex-col w-12 shrink-0 bg-[#1a1a1a] rounded-xl py-4 items-center justify-between border border-[#333] transition-colors hover:bg-black shadow-lg"
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, stage)}
@@ -239,6 +302,7 @@ export default function KanbanBoard() {
         return (
           <div 
             key={stage} 
+            data-stage={stage}
             className="flex flex-col w-80 shrink-0 bg-transparent transition-colors"
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, stage)}
@@ -264,10 +328,13 @@ export default function KanbanBoard() {
                 return (
                   <div 
                     key={deal.id} 
-                    draggable={isAdmin}
-                    onDragStart={(e) => isAdmin && handleDragStart(e, deal.id)}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, deal.id)}
+                    onTouchStart={(e) => handleTouchStart(e, deal.id)}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                     onClick={() => setSelectedDeal(deal)}
-                    className={`bg-white p-4 rounded-md shadow-md border border-gray-100 transition-all relative ${isAdmin ? 'hover:border-brand-red/50 hover:shadow-lg cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
+                    className="bg-white p-4 rounded-md shadow-md border border-gray-100 transition-all relative hover:border-brand-red/50 hover:shadow-lg cursor-grab active:cursor-grabbing touch-none select-none"
                   >
                     {deal.Modified_Time && (
                       <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
