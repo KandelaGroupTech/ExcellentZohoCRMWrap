@@ -54,7 +54,14 @@ export default function KanbanBoard() {
     queryKey: ['deals'],
     queryFn: async () => {
       const res = await fetch('/website-demos/excellentzohocrm/api/deals');
-      if (!res.ok) throw new Error('Failed to fetch deals');
+      if (!res.ok) {
+        let errStr = 'Failed to fetch deals';
+        try {
+          const errData = await res.json();
+          errStr = errData.error || errStr;
+        } catch(e) {}
+        throw new Error(errStr);
+      }
       return res.json();
     }
   });
@@ -123,7 +130,9 @@ export default function KanbanBoard() {
   if (error) {
     return (
       <div className="rounded-md bg-red-50 p-4">
-        <p className="text-sm font-medium text-red-800">Error loading deals.</p>
+        <p className="text-sm font-medium text-red-800">
+          Error loading deals: {error instanceof Error ? error.message : String(error)}
+        </p>
       </div>
     );
   }
