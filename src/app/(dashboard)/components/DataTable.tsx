@@ -13,10 +13,11 @@ interface DataTableProps {
   data: any[];
   columns: Column[];
   searchPlaceholder?: string;
-  searchKey: string; // The property name in the data to filter by (e.g. 'First_Name' or 'Account_Name')
+  searchKey: string; // The property name in the data to filter by
+  onRowClick?: (row: any) => void;
 }
 
-export default function DataTable({ data, columns, searchPlaceholder = "Search...", searchKey }: DataTableProps) {
+export default function DataTable({ data, columns, searchPlaceholder = "Search...", searchKey, onRowClick }: DataTableProps) {
   const [query, setQuery] = useState('');
 
   const filteredData = data.filter((row) => {
@@ -67,7 +68,11 @@ export default function DataTable({ data, columns, searchPlaceholder = "Search..
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredData.length > 0 ? (
               filteredData.map((row, idx) => (
-                <tr key={row.id || idx} className="hover:bg-gray-50">
+                <tr 
+                  key={row.id || idx} 
+                  className={`hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
+                  onClick={() => onRowClick?.(row)}
+                >
                   {columns.map((col) => (
                     <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {col.render ? col.render(row) : (

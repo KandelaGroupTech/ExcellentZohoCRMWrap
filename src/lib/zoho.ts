@@ -138,6 +138,54 @@ export async function fetchAccounts() {
   return data.data || [];
 }
 
+export async function fetchAccount(id: string) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  
+  const fields = 'Account_Name,Industry,Website,Phone,Billing_City,Billing_State,Annual_Revenue';
+  const response = await fetch(`${domain}/crm/v6/Accounts/${id}?fields=${fields}`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+
+  if (!response.ok) throw new Error('Failed to fetch account from Zoho');
+  const data = await response.json();
+  return data.data?.[0] || null;
+}
+
+export async function fetchContactsForAccount(accountId: string) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  
+  const response = await fetch(`${domain}/crm/v6/Contacts/search?criteria=(Account_Name:equals:${accountId})`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+
+  if (response.status === 204) return [];
+  if (!response.ok) throw new Error('Failed to fetch contacts for account');
+  const data = await response.json();
+  return data.data || [];
+}
+
+export async function fetchDealsForAccount(accountId: string) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  
+  const response = await fetch(`${domain}/crm/v6/Deals/search?criteria=(Account_Name:equals:${accountId})`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+
+  if (response.status === 204) return [];
+  if (!response.ok) throw new Error('Failed to fetch deals for account');
+  const data = await response.json();
+  return data.data || [];
+}
+
 async function createRecord(module: string, recordData: any) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
@@ -160,6 +208,41 @@ async function createRecord(module: string, recordData: any) {
 
   console.error(`Failed to create ${module}:`, responseData);
   throw new Error(`Failed to create ${module} in Zoho`);
+}
+
+async function updateRecord(module: string, recordId: string, recordData: any) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+
+  const response = await fetch(`${domain}/crm/v6/${module}`, {
+    method: 'PUT',
+    headers: { 
+      'Authorization': `Zoho-oauthtoken ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ data: [{ id: recordId, ...recordData }] })
+  });
+
+  const responseData = await response.json();
+  
+  if (responseData.data && responseData.data[0] && responseData.data[0].status === 'success') {
+    return responseData.data[0].details;
+  }
+
+  console.error(`Failed to update ${module} ${recordId}:`, responseData);
+  throw new Error(`Failed to update ${module} in Zoho`);
+}
+
+export async function updateLead(id: string, data: any) {
+  return updateRecord('Leads', id, data);
+}
+
+export async function updateContact(id: string, data: any) {
+  return updateRecord('Contacts', id, data);
+}
+
+export async function updateAccount(id: string, data: any) {
+  return updateRecord('Accounts', id, data);
 }
 
 async function deleteRecord(module: string, recordId: string) {
