@@ -2,7 +2,6 @@
 
 import { X, Loader2, Building, Phone, Globe, DollarSign, MapPin } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { cn } from '@/lib/utils';
 
 interface AccountSlideOverProps {
   accountId: string | null;
