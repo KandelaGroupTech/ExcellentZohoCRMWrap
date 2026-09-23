@@ -282,6 +282,10 @@ export async function deleteDeal(id: string) {
   return deleteRecord('Deals', id);
 }
 
+export async function updateDeal(id: string, data: Partial<{ Deal_Name: string, Amount: number, Stage: string, Closing_Date: string, Description: string }>) {
+  return updateRecord('Deals', id, data);
+}
+
 export async function createLead(data: { First_Name: string, Last_Name: string, Company: string, Email: string, Phone: string }) {
   return createRecord('Leads', data);
 }

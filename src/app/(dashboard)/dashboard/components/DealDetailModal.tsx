@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, CheckCircle2, Circle, Trash2 } from 'lucide-react';
+import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X } from 'lucide-react';
 import { useAuth, useUser } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import Modal from '../../components/Modal';
@@ -24,6 +24,8 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const { user } = useUser();
   const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
   const [newNoteContent, setNewNoteContent] = useState('');
+  const [editingAmount, setEditingAmount] = useState(false);
+  const [editAmountValue, setEditAmountValue] = useState('');
 
   const { data: notes, isLoading: isLoadingNotes, isError: isErrorNotes, error: errorNotes } = useQuery({
     queryKey: ['notes', deal?.id],
@@ -112,6 +114,38 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     }
   };
 
+  const updateAmountMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Amount: amount })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update amount');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      setEditingAmount(false);
+      toast.success('Amount updated');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to update amount');
+    }
+  });
+
+  const handleAmountSave = () => {
+    const parsed = parseFloat(editAmountValue.replace(/[^0-9.]/g, ''));
+    if (isNaN(parsed) || parsed < 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+    updateAmountMutation.mutate(parsed);
+  };
+
   const createTaskMutation = useMutation({
     mutationFn: async (subject: string) => {
       const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/tasks`, {
@@ -184,9 +218,57 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
             </div>
             <div>
               <span className="block text-gray-500 mb-1">Amount</span>
-              <span className="font-medium text-gray-900">
-                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(deal.Amount || 0)}
-              </span>
+              {isAdmin && editingAmount ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-sm">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editAmountValue}
+                    onChange={(e) => setEditAmountValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAmountSave();
+                      if (e.key === 'Escape') setEditingAmount(false);
+                    }}
+                    autoFocus
+                    className="w-28 px-2 py-1 text-sm border border-brand-red rounded-md focus:outline-none focus:ring-1 focus:ring-brand-red"
+                  />
+                  <button
+                    onClick={handleAmountSave}
+                    disabled={updateAmountMutation.isPending}
+                    className="p-1 text-green-600 hover:text-green-700 disabled:opacity-50"
+                    title="Save"
+                  >
+                    {updateAmountMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  </button>
+                  <button
+                    onClick={() => setEditingAmount(false)}
+                    className="p-1 text-gray-400 hover:text-gray-600"
+                    title="Cancel"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900">
+                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(deal.Amount || 0)}
+                  </span>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setEditAmountValue(String(deal.Amount || 0));
+                        setEditingAmount(true);
+                      }}
+                      className="p-0.5 text-gray-400 hover:text-brand-red transition-colors"
+                      title="Edit amount"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
             {deal.Account_Name?.name && (
               <div className="col-span-2">
