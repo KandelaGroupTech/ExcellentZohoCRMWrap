@@ -46,9 +46,9 @@ export default function EditModal({ isOpen, onClose, title, fields, initialData,
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-lg shadow-xl p-6">
+      <div className="relative w-full sm:max-w-md max-h-[90dvh] overflow-y-auto bg-white rounded-lg shadow-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-500">

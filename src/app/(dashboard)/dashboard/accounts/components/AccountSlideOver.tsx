@@ -44,7 +44,7 @@ export default function AccountSlideOver({ accountId, accountName, isOpen, onClo
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-md bg-white shadow-2xl h-full flex flex-col transform transition-transform duration-300 ease-in-out">
+      <div className="relative w-full sm:max-w-md bg-white shadow-2xl h-[100dvh] flex flex-col transform transition-transform duration-300 ease-in-out">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
             <Building className="h-5 w-5 text-gray-400" />

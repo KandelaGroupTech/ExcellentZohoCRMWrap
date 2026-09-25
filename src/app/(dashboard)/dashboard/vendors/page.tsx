@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail } from 'lucide-react';
 import VendorEditPanel from './components/VendorEditPanel';
+import SwipeableCard from '../../components/SwipeableCard';
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -160,112 +161,172 @@ export default function VendorsPage() {
         </div>
 
         <div className="flex-1 overflow-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button onClick={() => handleSort('Account_Name')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
-                    Vendor Name
-                    <span className="text-gray-400 group-hover:text-brand-red">
-                      {sortKey === 'Account_Name' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
-                    </span>
-                  </button>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button onClick={() => handleSort('Rating')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
-                    Status
-                    <span className="text-gray-400 group-hover:text-brand-red">
-                      {sortKey === 'Rating' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
-                    </span>
-                  </button>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button onClick={() => handleSort('Industry')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
-                    Trade
-                    <span className="text-gray-400 group-hover:text-brand-red">
-                      {sortKey === 'Industry' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
-                    </span>
-                  </button>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POC</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City / State</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Main Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filtered.length > 0 ? (
-                filtered.map((vendor: any, idx: number) => {
-                  const cityState = [vendor.Billing_City, vendor.Billing_State].filter(Boolean).join(', ');
-                  return (
-                    <tr
-                      key={vendor.id || idx}
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => setEditingVendor(vendor)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-red hover:underline">
-                        {vendor.Account_Name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {getStatusBadge(vendor.Rating)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {vendor.Industry || '—'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {vendor.Ticker_Symbol ? (
+          {/* Desktop Table */}
+          <div className="hidden md:block min-w-full">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('Account_Name')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
+                      Vendor Name
+                      <span className="text-gray-400 group-hover:text-brand-red">
+                        {sortKey === 'Account_Name' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                      </span>
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('Rating')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
+                      Status
+                      <span className="text-gray-400 group-hover:text-brand-red">
+                        {sortKey === 'Rating' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                      </span>
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button onClick={() => handleSort('Industry')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
+                      Trade
+                      <span className="text-gray-400 group-hover:text-brand-red">
+                        {sortKey === 'Industry' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                      </span>
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POC</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City / State</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Main Phone</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filtered.length > 0 ? (
+                  filtered.map((vendor: any, idx: number) => {
+                    const cityState = [vendor.Billing_City, vendor.Billing_State].filter(Boolean).join(', ');
+                    return (
+                      <tr
+                        key={vendor.id || idx}
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => setEditingVendor(vendor)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-red hover:underline">
+                          {vendor.Account_Name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {getStatusBadge(vendor.Rating)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {vendor.Industry || '—'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {vendor.Ticker_Symbol ? (
+                            <div className="flex flex-col">
+                              <span className="font-medium text-gray-900">{vendor.Ticker_Symbol}</span>
+                              {vendor.Fax && (
+                                <a href={`tel:${vendor.Fax}`} className="text-gray-500 hover:text-brand-red text-xs mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                  {vendor.Fax}
+                                </a>
+                              )}
+                            </div>
+                          ) : '—'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {cityState || '—'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {vendor.Phone ? (
+                            <a
+                              href={`tel:${vendor.Phone}`}
+                              className="text-brand-red hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {vendor.Phone}
+                            </a>
+                          ) : '—'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                          <span className="line-clamp-2">{vendor.Description || '—'}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingVendor(vendor);
+                            }}
+                            className="p-1 text-gray-400 hover:text-brand-red transition-colors"
+                            title="Edit vendor"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500">
+                      No vendors found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="block md:hidden">
+            {filtered.length > 0 ? (
+              filtered.map((vendor: any, idx: number) => {
+                const cityState = [vendor.Billing_City, vendor.Billing_State].filter(Boolean).join(', ');
+                return (
+                  <SwipeableCard
+                    key={vendor.id || idx}
+                    onEdit={() => setEditingVendor(vendor)}
+                    onClick={() => setEditingVendor(vendor)}
+                  >
+                    <div className="p-4 flex flex-col gap-2">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-medium text-brand-red text-base">{vendor.Account_Name}</h3>
+                          <p className="text-xs text-gray-500 mt-0.5">{vendor.Industry || 'No Trade'}</p>
+                        </div>
+                        <div>{getStatusBadge(vendor.Rating)}</div>
+                      </div>
+                      
+                      <div className="mt-2 grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+                        {vendor.Phone && (
                           <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{vendor.Ticker_Symbol}</span>
+                            <span className="text-xs text-gray-500">Main Phone</span>
+                            <a href={`tel:${vendor.Phone}`} className="text-brand-red font-medium" onClick={e => e.stopPropagation()}>
+                              {vendor.Phone}
+                            </a>
+                          </div>
+                        )}
+                        {vendor.Ticker_Symbol && (
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-500">POC: {vendor.Ticker_Symbol}</span>
                             {vendor.Fax && (
-                              <a href={`tel:${vendor.Fax}`} className="text-gray-500 hover:text-brand-red text-xs mt-0.5" onClick={(e) => e.stopPropagation()}>
+                              <a href={`tel:${vendor.Fax}`} className="text-gray-700" onClick={e => e.stopPropagation()}>
                                 {vendor.Fax}
                               </a>
                             )}
                           </div>
-                        ) : '—'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cityState || '—'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {vendor.Phone ? (
-                          <a
-                            href={`tel:${vendor.Phone}`}
-                            className="text-brand-red hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {vendor.Phone}
-                          </a>
-                        ) : '—'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
-                        <span className="line-clamp-2">{vendor.Description || '—'}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingVendor(vendor);
-                          }}
-                          className="p-1 text-gray-400 hover:text-brand-red transition-colors"
-                          title="Edit vendor"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500">
-                    No vendors found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                        )}
+                        {cityState && (
+                          <div className="flex flex-col col-span-2">
+                            <span className="text-xs text-gray-500">Location</span>
+                            <span className="text-gray-900">{cityState}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </SwipeableCard>
+                );
+              })
+            ) : (
+              <div className="p-8 text-center text-sm text-gray-500">
+                No vendors found.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

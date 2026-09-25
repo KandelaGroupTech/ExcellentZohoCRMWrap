@@ -30,7 +30,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
       {/* Slide-out Panel */}
       <div 
-        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-white shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
