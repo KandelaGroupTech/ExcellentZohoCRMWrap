@@ -87,11 +87,11 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
           >
             <option value="">-- Choose a Contact --</option>
             {contacts.map((c: any) => {
-              const name = \\ \\.trim() || 'Unnamed Contact';
+              const name = `${c.First_Name || ''} ${c.Last_Name || ''}`.trim() || 'Unnamed Contact';
               const acct = typeof c.Account_Name === 'object' ? c.Account_Name?.name : c.Account_Name;
               return (
                 <option key={c.id} value={c.id}>
-                  {name} {acct ? \(\)\ : ''}
+                  {name} {acct ? `(${acct})` : ''}
                 </option>
               );
             })}
