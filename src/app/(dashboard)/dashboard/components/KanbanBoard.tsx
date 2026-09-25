@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, CheckSquare, ChevronRight, ChevronLeft, Search } from 'lucide-react';
+import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 
@@ -262,7 +262,77 @@ export default function KanbanBoard() {
           />
         </div>
       </div>
-      <div className="flex h-full space-x-4 overflow-x-auto pb-4 custom-scrollbar">
+      {/* Mobile Vertical Accordion Layout */}
+      <div className="flex md:hidden flex-col h-full space-y-3 overflow-y-auto pb-6 px-1 custom-scrollbar">
+        {STAGES.map((stage) => {
+          const stageDeals = dealsByStage[stage];
+          const totalAmount = stageDeals.reduce((sum, d) => sum + (d.Amount || 0), 0);
+          const isExpanded = collapsedStages[`mobile_${stage}`] || false;
+
+          return (
+            <div key={`mobile-${stage}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden shrink-0">
+              <button 
+                onClick={() => toggleCollapse(`mobile_${stage}`)}
+                className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-gray-900 text-sm text-left">{stage}</span>
+                  <span className="bg-brand-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">{stageDeals.length}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">{formatCurrency(totalAmount)}</span>
+                  <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                </div>
+              </button>
+
+              {isExpanded && (
+                <div className="p-3 bg-gray-100/50 space-y-3 border-t border-gray-200">
+                  {stageDeals.map((deal) => {
+                    const outstandingTasks = Array.isArray(allTasks) 
+                      ? allTasks.filter(t => (t.What_Id?.id === deal.id || t.SEMODULE_ID === deal.id) && t.Status !== 'Completed').length 
+                      : 0;
+
+                    return (
+                      <div 
+                        key={deal.id} 
+                        onClick={() => setSelectedDeal(deal)}
+                        className="bg-white p-4 rounded-md shadow-sm border border-gray-200 hover:border-brand-red/50 hover:shadow transition-all relative cursor-pointer"
+                      >
+                        {deal.Modified_Time && (
+                          <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
+                            {formatDate(deal.Modified_Time)}
+                          </span>
+                        )}
+                        <h4 className="text-sm font-bold text-gray-900 mb-2 pr-16 leading-tight">{deal.Deal_Name}</h4>
+                        {deal.Account_Name?.name && (
+                          <p className="text-xs text-gray-600 mb-3 line-clamp-1">{deal.Account_Name.name}</p>
+                        )}
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
+                          {outstandingTasks > 0 && (
+                            <div className="flex items-center bg-brand-red/10 text-brand-red px-1.5 py-0.5 rounded text-[10px] font-bold">
+                              <CheckSquare className="w-3 h-3 mr-1" />
+                              {outstandingTasks}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {stageDeals.length === 0 && (
+                    <div className="text-center py-6 text-xs text-gray-400 border-2 border-dashed border-gray-200 rounded-md bg-white">
+                      No deals in this stage
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop Horizontal Kanban Layout */}
+      <div className="hidden md:flex h-full space-x-4 overflow-x-auto pb-4 custom-scrollbar">
         {STAGES.map((stage) => {
         const stageDeals = dealsByStage[stage];
         const totalAmount = stageDeals.reduce((sum, d) => sum + (d.Amount || 0), 0);
@@ -393,3 +463,4 @@ export default function KanbanBoard() {
     </div>
   );
 }
+
