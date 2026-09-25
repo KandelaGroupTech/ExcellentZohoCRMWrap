@@ -91,11 +91,15 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
       Description: notes || '',
       Call_Start_Time: d.toISOString().replace(/\.\d{3}Z$/, '+00:00'),
       Call_Duration: '00:05',
-      Outgoing_Call_Status: 'Completed'
+      Outgoing_Call_Status: 'Completed',
+      Entity_Type: modalData.entityType
     };
 
     if (modalData.entityType === 'Accounts') {
       callData['$se_module'] = 'Accounts';
+      callData['What_Id'] = { id: modalData.entityId };
+    } else if (modalData.entityType === 'Deals') {
+      callData['$se_module'] = 'Deals';
       callData['What_Id'] = { id: modalData.entityId };
     } else {
       callData['Who_Id'] = { id: modalData.entityId };

@@ -533,9 +533,11 @@ export async function fetchNotesForDeal(dealId: string) {
   return data.data || [];
 }
 
-export async function createNote(data: { Parent_Id: string, Note_Content: string, Note_Title: string }) {
+export async function createNote(data: { Parent_Id: string, Note_Content: string, Note_Title: string, se_module?: string }) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
+  
+  const moduleName = data.se_module || 'Deals';
 
   const payload = {
     data: [{
@@ -543,9 +545,9 @@ export async function createNote(data: { Parent_Id: string, Note_Content: string
       Note_Content: data.Note_Content,
       Parent_Id: {
         id: data.Parent_Id,
-        module: { api_name: 'Deals' }
+        module: { api_name: moduleName }
       },
-      se_module: 'Deals'
+      se_module: moduleName
     }]
   };
 
