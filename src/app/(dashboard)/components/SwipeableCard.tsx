@@ -84,7 +84,7 @@ export default function SwipeableCard({ children, onEdit, onDelete, onClick }: S
 
       {/* Foreground Content (The Card) */}
       <div 
-        className="relative z-10 bg-white w-full transition-transform duration-200 ease-out cursor-pointer active:bg-gray-50"
+        className="relative z-10 bg-gray-50/90 backdrop-blur-sm w-full transition-transform duration-200 ease-out cursor-pointer active:bg-gray-50"
         style={{ transform: `translateX(-${offset}px)` }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -102,3 +102,4 @@ export default function SwipeableCard({ children, onEdit, onDelete, onClick }: S
     </div>
   );
 }
+

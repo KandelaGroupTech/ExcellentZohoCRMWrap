@@ -50,7 +50,7 @@ export default function DataTable({ data, columns, searchPlaceholder = "Search..
   });
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+    <div className="flex flex-col h-full bg-gray-50/90 backdrop-blur-md rounded-lg shadow-md border border-gray-200 overflow-hidden">
       <div className="p-4 border-b border-gray-200">
         <div className="relative max-w-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -83,7 +83,7 @@ export default function DataTable({ data, columns, searchPlaceholder = "Search..
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-transparent divide-y divide-gray-200">
               {filteredData.length > 0 ? (
                 filteredData.map((row, idx) => (
                   <tr 
@@ -161,3 +161,4 @@ export default function DataTable({ data, columns, searchPlaceholder = "Search..
     </div>
   );
 }
+

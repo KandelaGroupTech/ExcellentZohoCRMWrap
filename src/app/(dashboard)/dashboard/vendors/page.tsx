@@ -197,7 +197,7 @@ export default function VendorsPage() {
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-lg shadow border border-gray-200">
+      <div className="flex-1 overflow-hidden flex flex-col bg-gray-50/90 backdrop-blur-md rounded-lg shadow-md border border-gray-200">
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 min-w-[200px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -272,7 +272,7 @@ export default function VendorsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-transparent divide-y divide-gray-200">
                 {filtered.length > 0 ? (
                   filtered.map((vendor: any, idx: number) => {
                     const cityState = [vendor.Billing_City, vendor.Billing_State].filter(Boolean).join(', ');
@@ -439,4 +439,5 @@ export default function VendorsPage() {
     </div>
   );
 }
+
 

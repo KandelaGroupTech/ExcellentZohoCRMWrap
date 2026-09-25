@@ -38,7 +38,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
 
       {/* Slide-out Panel */}
       <div 
-        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-white shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50/95 backdrop-blur-md shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -84,7 +84,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
         )}
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* Quick Contact Links (Mobile Friendly) */}
           <div className="flex flex-col gap-3">
@@ -166,3 +166,4 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
     document.body
   );
 }
+

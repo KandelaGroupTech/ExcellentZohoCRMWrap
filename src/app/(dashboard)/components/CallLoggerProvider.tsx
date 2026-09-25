@@ -108,7 +108,7 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
       {modalData && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
-          <div className="relative w-full max-w-sm bg-white rounded-xl shadow-2xl p-5 animate-in fade-in zoom-in duration-200">
+          <div className="relative w-full max-w-sm bg-gray-50/95 backdrop-blur-md rounded-xl shadow-2xl p-5 animate-in fade-in zoom-in duration-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-1">Log Call</h3>
             <p className="text-sm text-gray-500 mb-4">
               Did you speak with {modalData.name || 'them'}?
@@ -160,3 +160,4 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
     </CallLoggerContext.Provider>
   );
 }
+

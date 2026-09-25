@@ -270,7 +270,7 @@ export default function KanbanBoard() {
           const isExpanded = collapsedStages[`mobile_${stage}`] || false;
 
           return (
-            <div key={`mobile-${stage}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden shrink-0">
+            <div key={`mobile-${stage}`} className="bg-gray-50/90 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 overflow-hidden shrink-0">
               <button 
                 onClick={() => toggleCollapse(`mobile_${stage}`)}
                 className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
@@ -296,7 +296,7 @@ export default function KanbanBoard() {
                       <div 
                         key={deal.id} 
                         onClick={() => setSelectedDeal(deal)}
-                        className="bg-white p-4 rounded-md shadow-sm border border-gray-200 hover:border-brand-red/50 hover:shadow transition-all relative cursor-pointer"
+                        className="bg-white/80 p-4 rounded-md shadow-sm border border-gray-200 hover:border-brand-red/50 hover:shadow transition-all relative cursor-pointer"
                       >
                         {deal.Modified_Time && (
                           <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
@@ -404,7 +404,7 @@ export default function KanbanBoard() {
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     onClick={() => setSelectedDeal(deal)}
-                    className="bg-white p-4 rounded-md shadow-md border border-gray-100 transition-all relative hover:border-brand-red/50 hover:shadow-lg cursor-grab active:cursor-grabbing touch-none select-none"
+                    className="bg-white/80 backdrop-blur-sm p-4 rounded-md shadow-sm border border-gray-200 transition-all relative hover:border-brand-red/50 hover:shadow-lg cursor-grab active:cursor-grabbing touch-none select-none"
                   >
                     {deal.Modified_Time && (
                       <span className="absolute top-2 right-2 text-[10px] text-gray-400 font-medium whitespace-nowrap">
@@ -463,4 +463,5 @@ export default function KanbanBoard() {
     </div>
   );
 }
+
 
