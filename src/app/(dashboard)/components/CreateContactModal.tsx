@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import Modal from './Modal';
+import { formatPhoneNumber } from '../../../lib/utils';
 
 export default function CreateContactModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const queryClient = useQueryClient();
@@ -64,7 +65,7 @@ export default function CreateContactModal({ isOpen, onClose }: { isOpen: boolea
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Phone</label>
-          <input type="tel" value={formData.Phone} onChange={e => setFormData({...formData, Phone: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+          <input type="tel" value={formData.Phone} onChange={e => setFormData({...formData, Phone: formatPhoneNumber(e.target.value)})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
         
         {createMutation.isError && <p className="text-red-600 text-sm">Error creating contact.</p>}

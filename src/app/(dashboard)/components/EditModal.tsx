@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { formatPhoneNumber } from '../../../lib/utils';
 
 interface Field {
   key: string;
@@ -72,7 +73,13 @@ export default function EditModal({ isOpen, onClose, title, fields, initialData,
                 id={field.key}
                 type={field.type || 'text'}
                 value={formData[field.key]}
-                onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                onChange={(e) => {
+                  let value = e.target.value;
+                  if (field.type === 'tel') {
+                    value = formatPhoneNumber(value);
+                  }
+                  setFormData(prev => ({ ...prev, [field.key]: value }));
+                }}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red"
               />
             </div>

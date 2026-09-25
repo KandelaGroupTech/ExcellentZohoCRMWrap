@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
+import { formatPhoneNumber } from '../../../../lib/utils';
 
 interface VendorEditPanelProps {
   vendor: any | null;
@@ -174,7 +175,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
                     disabled={!isAdmin || updateMutation.isPending}
                     placeholder="(555) 123-4567"
                     className={inputClass}
@@ -215,7 +216,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
                   <input
                     type="tel"
                     value={pocPhone}
-                    onChange={(e) => setPocPhone(e.target.value)}
+                    onChange={(e) => setPocPhone(formatPhoneNumber(e.target.value))}
                     disabled={!isAdmin || updateMutation.isPending}
                     placeholder="Direct/Cell..."
                     className={inputClass}
