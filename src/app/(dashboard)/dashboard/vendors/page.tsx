@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail, Plus } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
@@ -8,6 +8,72 @@ import VendorEditPanel from './components/VendorEditPanel';
 import SwipeableCard from '../../components/SwipeableCard';
 import { useCallLogger } from '../../components/CallLoggerProvider';
 import CreateVendorModal from '../../components/CreateVendorModal';
+
+function MultiSelectDropdown({ 
+  options, 
+  selected, 
+  onChange, 
+  placeholder 
+}: { 
+  options: string[], 
+  selected: string[], 
+  onChange: (s: string[]) => void, 
+  placeholder: string 
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleOption = (opt: string) => {
+    if (selected.includes(opt)) onChange(selected.filter(o => o !== opt));
+    else onChange([...selected, opt]);
+  };
+
+  return (
+    <div className="relative w-full" ref={containerRef}>
+      <div 
+        className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white cursor-pointer flex items-center justify-between"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="truncate mr-2 text-gray-700 select-none">
+          {selected.length === 0 ? placeholder : selected.join(', ')}
+        </span>
+        <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+      </div>
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+          {options.map(opt => (
+            <div 
+              key={opt}
+              className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleOption(opt);
+              }}
+            >
+              <input 
+                type="checkbox"
+                checked={selected.includes(opt)}
+                readOnly
+                className="mr-2 rounded border-gray-300 text-brand-red focus:ring-brand-red pointer-events-none"
+              />
+              <span className="text-gray-700 select-none pointer-events-none">{opt}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -31,7 +97,7 @@ export default function VendorsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [editingVendor, setEditingVendor] = useState<any | null>(null);
   const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | 'Rating' | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -71,7 +137,9 @@ export default function VendorsPage() {
     const result = vendors.filter((v: any) => {
       const nameMatch = !search || (v.Account_Name || '').toLowerCase().includes(search.toLowerCase());
       const tradeMatch = !tradeFilter || v.Industry === tradeFilter;
-      const statusMatch = !statusFilter || (statusFilter === 'Uncategorized' ? (!v.Rating || v.Rating === '') : v.Rating === statusFilter);
+      const statusMatch = statusFilter.length === 0 || statusFilter.some(filter => {
+        return filter === 'Uncategorized' ? (!v.Rating || v.Rating === '') : v.Rating === filter;
+      });
       return nameMatch && tradeMatch && statusMatch;
     });
 
@@ -145,18 +213,12 @@ export default function VendorsPage() {
           </div>
 
           <div className="w-full sm:w-48">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-brand-red focus:border-brand-red"
-            >
-              <option value="">All Statuses</option>
-              <option value="Preferred">Preferred</option>
-              <option value="Backup">Backup</option>
-              <option value="Used">Used</option>
-              <option value="Do Not Use">Do Not Use</option>
-              <option value="Uncategorized">Uncategorized</option>
-            </select>
+            <MultiSelectDropdown
+              options={['Preferred', 'Backup', 'Used', 'Do Not Use', 'Uncategorized']}
+              selected={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="All Statuses"
+            />
           </div>
 
           <div className="w-full sm:w-48">
