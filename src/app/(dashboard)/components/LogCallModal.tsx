@@ -1,75 +1,145 @@
 'use client';
 
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import Modal from './Modal';
+import { Loader2 } from 'lucide-react';
 
 export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-  const [formData, setFormData] = useState({
-    Subject: '',
-    Call_Purpose: '',
-    Description: ''
+  const [selectedContactId, setSelectedContactId] = useState<string>('');
+  const [notes, setNotes] = useState('');
+
+  const queryClient = useQueryClient();
+
+  // Fetch contacts for the dropdown
+  const { data: contacts = [], isLoading: isLoadingContacts } = useQuery({
+    queryKey: ['contacts'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts');
+      if (!res.ok) throw new Error('Failed to fetch contacts');
+      return res.json();
+    },
+    enabled: isOpen
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async (result: string) => {
+      if (!selectedContactId) throw new Error('Please select a contact first.');
+      
+      const d = new Date(); d.setMinutes(d.getMinutes() - 6);
+      
+      const callData: any = {
+        Subject: 'Outbound Call',
+        Call_Type: 'Outbound',
+        Call_Result: result,
+        Description: notes || '',
+        Call_Start_Time: d.toISOString().replace(/\.\d{3}Z$/, '+00:00'),
+        Call_Duration: '00:05',
+        Outgoing_Call_Status: 'Completed',
+        Entity_Type: 'Contacts',
+        Who_Id: { id: selectedContactId }
+      };
+
       const res = await fetch('/website-demos/excellentzohocrm/api/calls', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(callData)
       });
       if (!res.ok) throw new Error('Failed to log call');
       return res.json();
     },
     onSuccess: () => {
       onClose();
-      setFormData({ Subject: '', Call_Purpose: '', Description: '' });
+      setSelectedContactId('');
+      setNotes('');
       toast.success('Call logged successfully!');
+      // Optionally invalidate contacts if you want recent activity to update
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
     },
-    onError: () => {
-      toast.error('Failed to log call.');
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to log call.');
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createMutation.mutate(formData);
+  const handleLogCall = (result: string) => {
+    if (!selectedContactId) {
+      toast.error('Please select a contact.');
+      return;
+    }
+    createMutation.mutate(result);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Log a Call">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Subject</label>
-          <input required type="text" value={formData.Subject} onChange={e => setFormData({...formData, Subject: e.target.value})} placeholder="e.g. Initial Outreach" className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Call Purpose</label>
-          <select value={formData.Call_Purpose} onChange={e => setFormData({...formData, Call_Purpose: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border">
-            <option value="">Select Purpose...</option>
-            <option value="Prospecting">Prospecting</option>
-            <option value="Administrative">Administrative</option>
-            <option value="Negotiation">Negotiation</option>
-            <option value="Demo">Demo</option>
-            <option value="Project">Project</option>
-            <option value="Desk">Desk</option>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-sm bg-gray-50 rounded-xl shadow-2xl p-5 animate-in fade-in zoom-in duration-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Log a Call</h3>
+        
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Select Contact</label>
+          <select
+            value={selectedContactId}
+            onChange={(e) => setSelectedContactId(e.target.value)}
+            disabled={isLoadingContacts || createMutation.isPending}
+            className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white disabled:bg-gray-100"
+          >
+            <option value="">-- Choose a Contact --</option>
+            {contacts.map((c: any) => {
+              const name = \\ \\.trim() || 'Unnamed Contact';
+              const acct = typeof c.Account_Name === 'object' ? c.Account_Name?.name : c.Account_Name;
+              return (
+                <option key={c.id} value={c.id}>
+                  {name} {acct ? \(\)\ : ''}
+                </option>
+              );
+            })}
           </select>
+          {isLoadingContacts && <p className="text-xs text-gray-500 mt-1">Loading contacts...</p>}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description / Notes</label>
-          <textarea rows={3} value={formData.Description} onChange={e => setFormData({...formData, Description: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
+
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Notes (optional)</label>
+          <input 
+            type="text" 
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white"
+            placeholder="What was discussed?"
+            disabled={createMutation.isPending}
+          />
         </div>
         
-        {createMutation.isError && <p className="text-red-600 text-sm">Error logging call.</p>}
-        
-        <div className="flex justify-end pt-4">
-          <button type="button" onClick={onClose} className="mr-3 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">Cancel</button>
-          <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 text-sm font-medium text-white bg-brand-red border border-transparent rounded-md shadow-sm hover:bg-brand-red/90 disabled:opacity-50">
-            {createMutation.isPending ? 'Saving...' : 'Log Call'}
+        <div className="flex gap-3 mb-4">
+          <button 
+            type="button"
+            onClick={() => handleLogCall('Connected')}
+            disabled={createMutation.isPending || !selectedContactId}
+            className="flex-1 bg-brand-red text-white py-2 rounded-md font-medium text-sm hover:bg-brand-red/90 disabled:opacity-50 transition-colors inline-flex justify-center items-center"
+          >
+            {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Connected'}
+          </button>
+          <button 
+            type="button"
+            onClick={() => handleLogCall('No Answer')}
+            disabled={createMutation.isPending || !selectedContactId}
+            className="flex-1 bg-gray-100 text-gray-800 border border-gray-200 py-2 rounded-md font-medium text-sm hover:bg-gray-200 disabled:opacity-50 transition-colors inline-flex justify-center items-center"
+          >
+            No Answer
           </button>
         </div>
-      </form>
-    </Modal>
+        
+        <div className="text-center">
+          <button 
+            type="button"
+            onClick={onClose}
+            className="text-xs text-gray-400 hover:text-gray-600 underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
