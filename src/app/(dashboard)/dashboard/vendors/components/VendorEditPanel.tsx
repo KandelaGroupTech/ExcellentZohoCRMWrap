@@ -18,8 +18,6 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   const isAdmin = orgRole === 'org:admin';
   const queryClient = useQueryClient();
 
-  if (!vendor && !isOpen) return null;
-
   const [trade, setTrade] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -45,7 +43,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch(`/website-demos/excellentzohocrm/api/vendors/${vendor.id}`, {
+      const res = await fetch(`/website-demos/excellentzohocrm/api/vendors/${vendor?.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -80,6 +78,8 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
 
   const cityState = [vendor?.Billing_City, vendor?.Billing_State].filter(Boolean).join(', ');
   const inputClass = "block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-brand-red focus:border-brand-red disabled:bg-gray-50 disabled:text-gray-400 bg-white";
+
+  if (!vendor && !isOpen) return null;
 
   return (
     <>
