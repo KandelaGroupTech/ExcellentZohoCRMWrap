@@ -23,6 +23,7 @@ const getStatusBadge = (status: string) => {
 export default function VendorsPage() {
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [editingVendor, setEditingVendor] = useState<any | null>(null);
   const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | 'Rating' | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -62,7 +63,8 @@ export default function VendorsPage() {
     const result = vendors.filter((v: any) => {
       const nameMatch = !search || (v.Account_Name || '').toLowerCase().includes(search.toLowerCase());
       const tradeMatch = !tradeFilter || v.Industry === tradeFilter;
-      return nameMatch && tradeMatch;
+      const statusMatch = !statusFilter || (statusFilter === 'Uncategorized' ? (!v.Rating || v.Rating === '') : v.Rating === statusFilter);
+      return nameMatch && tradeMatch && statusMatch;
     });
 
     if (sortKey) {
@@ -115,7 +117,7 @@ export default function VendorsPage() {
 
       <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-lg shadow border border-gray-200">
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3">
-          <div className="relative max-w-sm w-full">
+          <div className="relative flex-1 min-w-[200px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
@@ -126,6 +128,21 @@ export default function VendorsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+          </div>
+
+          <div className="w-full sm:w-48">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-brand-red focus:border-brand-red"
+            >
+              <option value="">All Statuses</option>
+              <option value="Preferred">Preferred</option>
+              <option value="Backup">Backup</option>
+              <option value="Used">Used</option>
+              <option value="Do Not Use">Do Not Use</option>
+              <option value="Uncategorized">Uncategorized</option>
+            </select>
           </div>
 
           <div className="w-full sm:w-48">
