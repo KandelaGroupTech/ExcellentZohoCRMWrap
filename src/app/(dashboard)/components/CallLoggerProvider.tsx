@@ -81,12 +81,15 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
   const handleLogCall = (result: 'Connected' | 'No Answer') => {
     if (!modalData) return;
     
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - 6); // Set start time to 6 minutes ago so that 5 min duration is valid
+    
     const callData: any = {
       Subject: 'Outbound Call',
       Call_Type: 'Outbound',
       Call_Result: result,
       Description: notes || '',
-      Call_Start_Time: new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00'),
+      Call_Start_Time: d.toISOString().replace(/\.\d{3}Z$/, '+00:00'),
       Call_Duration: '00:05',
       Outgoing_Call_Status: 'Completed'
     };
