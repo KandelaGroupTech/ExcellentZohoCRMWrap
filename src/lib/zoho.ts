@@ -163,14 +163,14 @@ export async function fetchVendors() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
 
-  const fields = 'Account_Name,Industry,Billing_City,Billing_State,Phone,Email,Description,Account_Type';
   let allVendors: any[] = [];
   let page = 1;
   let hasMore = true;
 
   while (hasMore) {
+    // We omit &fields= so that newly added custom fields (like POC_Name) are automatically included without crashing if they don't exist yet
     const response = await fetch(
-      `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:equals:Vendor)&fields=${fields}&per_page=200&page=${page}`,
+      `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:equals:Vendor)&per_page=200&page=${page}`,
       {
         method: 'GET',
         headers: { 'Authorization': `Zoho-oauthtoken ${token}` },

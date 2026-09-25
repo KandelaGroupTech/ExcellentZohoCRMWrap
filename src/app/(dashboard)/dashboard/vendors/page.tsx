@@ -5,11 +5,26 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import VendorEditPanel from './components/VendorEditPanel';
 
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case 'Preferred':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Preferred</span>;
+    case 'Backup':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Backup</span>;
+    case 'Used':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">Used</span>;
+    case 'Do Not Use':
+      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Do Not Use</span>;
+    default:
+      return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200">Uncategorized</span>;
+  }
+};
+
 export default function VendorsPage() {
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
   const [editingVendor, setEditingVendor] = useState<any | null>(null);
-  const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | null>(null);
+  const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | 'Vendor_Status' | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const { data: vendors, isLoading, error } = useQuery({
@@ -24,7 +39,6 @@ export default function VendorsPage() {
     },
   });
 
-  // Build distinct trade options from returned data
   const tradeOptions = useMemo(() => {
     if (!vendors) return [];
     const set = new Set<string>();
@@ -34,8 +48,7 @@ export default function VendorsPage() {
     return Array.from(set).sort();
   }, [vendors]);
 
-  // Toggle sort: same column flips direction; new column resets to asc
-  const handleSort = (key: 'Account_Name' | 'Industry') => {
+  const handleSort = (key: 'Account_Name' | 'Industry' | 'Vendor_Status') => {
     if (sortKey === key) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -44,7 +57,6 @@ export default function VendorsPage() {
     }
   };
 
-  // Apply search + trade filter + sort
   const filtered = useMemo(() => {
     if (!vendors) return [];
     const result = vendors.filter((v: any) => {
@@ -57,6 +69,17 @@ export default function VendorsPage() {
       result.sort((a: any, b: any) => {
         const aVal = (a[sortKey] || '').toLowerCase();
         const bVal = (b[sortKey] || '').toLowerCase();
+        
+        // Custom sort order for Status to keep Preferred at top when asc
+        if (sortKey === 'Vendor_Status') {
+          const statusOrder: Record<string, number> = { 'preferred': 1, 'backup': 2, 'used': 3, 'do not use': 4, '': 5 };
+          const aRank = statusOrder[aVal] || 5;
+          const bRank = statusOrder[bVal] || 5;
+          if (aRank < bRank) return sortDir === 'asc' ? -1 : 1;
+          if (aRank > bRank) return sortDir === 'asc' ? 1 : -1;
+          return 0;
+        }
+
         if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
         return 0;
@@ -86,16 +109,12 @@ export default function VendorsPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
-      {/* Page header */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-medium text-gray-900">Vendors</h2>
       </div>
 
-      {/* Table card */}
       <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-lg shadow border border-gray-200">
-        {/* Toolbar: search + trade filter */}
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3">
-          {/* Search */}
           <div className="relative max-w-sm w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
@@ -109,7 +128,6 @@ export default function VendorsPage() {
             />
           </div>
 
-          {/* Trade filter */}
           <div className="w-full sm:w-48">
             <select
               value={tradeFilter}
@@ -124,44 +142,37 @@ export default function VendorsPage() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="flex-1 overflow-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('Account_Name')}
-                    className="flex items-center gap-1 group hover:text-brand-red transition-colors"
-                  >
+                  <button onClick={() => handleSort('Account_Name')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
                     Vendor Name
                     <span className="text-gray-400 group-hover:text-brand-red">
-                      {sortKey === 'Account_Name'
-                        ? sortDir === 'asc'
-                          ? <ChevronUp className="h-3.5 w-3.5" />
-                          : <ChevronDown className="h-3.5 w-3.5" />
-                        : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                      {sortKey === 'Account_Name' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
                     </span>
                   </button>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('Industry')}
-                    className="flex items-center gap-1 group hover:text-brand-red transition-colors"
-                  >
-                    Trade
+                  <button onClick={() => handleSort('Vendor_Status')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
+                    Status
                     <span className="text-gray-400 group-hover:text-brand-red">
-                      {sortKey === 'Industry'
-                        ? sortDir === 'asc'
-                          ? <ChevronUp className="h-3.5 w-3.5" />
-                          : <ChevronDown className="h-3.5 w-3.5" />
-                        : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                      {sortKey === 'Vendor_Status' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
                     </span>
                   </button>
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button onClick={() => handleSort('Industry')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
+                    Trade
+                    <span className="text-gray-400 group-hover:text-brand-red">
+                      {sortKey === 'Industry' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                    </span>
+                  </button>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POC</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City / State</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Main Phone</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
               </tr>
@@ -179,8 +190,23 @@ export default function VendorsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-red hover:underline">
                         {vendor.Account_Name}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {getStatusBadge(vendor.Vendor_Status)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {vendor.Industry || '—'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {vendor.POC_Name ? (
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900">{vendor.POC_Name}</span>
+                            {vendor.POC_Phone && (
+                              <a href={`tel:${vendor.POC_Phone}`} className="text-gray-500 hover:text-brand-red text-xs mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                {vendor.POC_Phone}
+                              </a>
+                            )}
+                          </div>
+                        ) : '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {cityState || '—'}
@@ -193,17 +219,6 @@ export default function VendorsPage() {
                             onClick={(e) => e.stopPropagation()}
                           >
                             {vendor.Phone}
-                          </a>
-                        ) : '—'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {vendor.Email ? (
-                          <a
-                            href={`mailto:${vendor.Email}`}
-                            className="text-brand-red hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {vendor.Email}
                           </a>
                         ) : '—'}
                       </td>
@@ -227,7 +242,7 @@ export default function VendorsPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500">
+                  <td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500">
                     No vendors found.
                   </td>
                 </tr>
@@ -237,7 +252,6 @@ export default function VendorsPage() {
         </div>
       </div>
 
-      {/* Edit slide-out panel */}
       <VendorEditPanel
         vendor={editingVendor}
         isOpen={!!editingVendor}
@@ -246,3 +260,4 @@ export default function VendorsPage() {
     </div>
   );
 }
+

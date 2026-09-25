@@ -21,6 +21,11 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
+  
+  // New custom fields
+  const [status, setStatus] = useState('');
+  const [pocName, setPocName] = useState('');
+  const [pocPhone, setPocPhone] = useState('');
 
   // Sync form when vendor changes
   useEffect(() => {
@@ -29,11 +34,14 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       setPhone(vendor.Phone || '');
       setEmail(vendor.Email || '');
       setNotes(vendor.Description || '');
+      setStatus(vendor.Vendor_Status || '');
+      setPocName(vendor.POC_Name || '');
+      setPocPhone(vendor.POC_Phone || '');
     }
   }, [vendor]);
 
   const updateMutation = useMutation({
-    mutationFn: async (data: { Industry: string; Phone: string; Email: string; Description: string }) => {
+    mutationFn: async (data: any) => {
       const res = await fetch(`/website-demos/excellentzohocrm/api/vendors/${vendor.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -56,11 +64,19 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   });
 
   const handleSave = () => {
-    updateMutation.mutate({ Industry: trade, Phone: phone, Email: email, Description: notes });
+    updateMutation.mutate({ 
+      Industry: trade, 
+      Phone: phone, 
+      Email: email, 
+      Description: notes,
+      Vendor_Status: status,
+      POC_Name: pocName,
+      POC_Phone: pocPhone
+    });
   };
 
   const cityState = [vendor?.Billing_City, vendor?.Billing_State].filter(Boolean).join(', ');
-  const inputClass = "block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-brand-red focus:border-brand-red disabled:bg-gray-50 disabled:text-gray-400";
+  const inputClass = "block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-brand-red focus:border-brand-red disabled:bg-gray-50 disabled:text-gray-400 bg-white";
 
   return (
     <>
@@ -92,10 +108,10 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
 
           {/* Read-only: Name & Location */}
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
               Vendor Profile
             </h3>
@@ -114,53 +130,108 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
           {/* Editable fields */}
           <div className="space-y-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Contact & Details
+              Categorization
             </h3>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                disabled={!isAdmin || updateMutation.isPending}
-                placeholder="e.g. (555) 123-4567"
-                className={inputClass}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  disabled={!isAdmin || updateMutation.isPending}
+                  className={inputClass}
+                >
+                  <option value="">Uncategorized</option>
+                  <option value="Preferred">Preferred</option>
+                  <option value="Backup">Backup</option>
+                  <option value="Used">Used</option>
+                  <option value="Do Not Use">Do Not Use</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Trade (Industry)</label>
+                <input
+                  type="text"
+                  value={trade}
+                  onChange={(e) => setTrade(e.target.value)}
+                  disabled={!isAdmin || updateMutation.isPending}
+                  placeholder="e.g. Electrical..."
+                  className={inputClass}
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={!isAdmin || updateMutation.isPending}
-                placeholder="e.g. contact@vendor.com"
-                className={inputClass}
-              />
+            <div className="border-t border-gray-100 pt-4 mt-4 space-y-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Main Company Info
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    placeholder="(555) 123-4567"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    placeholder="contact@..."
+                    className={inputClass}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Trade (Industry)</label>
-              <input
-                type="text"
-                value={trade}
-                onChange={(e) => setTrade(e.target.value)}
-                disabled={!isAdmin || updateMutation.isPending}
-                placeholder="e.g. Electrical, Plumbing..."
-                className={inputClass}
-              />
+            <div className="border-t border-gray-100 pt-4 mt-4 space-y-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Point of Contact
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">POC Name</label>
+                  <input
+                    type="text"
+                    value={pocName}
+                    onChange={(e) => setPocName(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    placeholder="John Doe"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">POC Phone</label>
+                  <input
+                    type="tel"
+                    value={pocPhone}
+                    onChange={(e) => setPocPhone(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    placeholder="Direct/Cell..."
+                    className={inputClass}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div>
+            <div className="border-t border-gray-100 pt-4 mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 disabled={!isAdmin || updateMutation.isPending}
                 placeholder="Add notes about this vendor..."
-                rows={5}
+                rows={4}
                 className={`${inputClass} resize-none`}
               />
             </div>
@@ -196,3 +267,4 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
     </>
   );
 }
+
