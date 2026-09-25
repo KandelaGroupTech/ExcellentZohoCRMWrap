@@ -2,13 +2,15 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Edit2, Search } from 'lucide-react';
+import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import VendorEditPanel from './components/VendorEditPanel';
 
 export default function VendorsPage() {
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
   const [editingVendor, setEditingVendor] = useState<any | null>(null);
+  const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const { data: vendors, isLoading, error } = useQuery({
     queryKey: ['vendors'],
@@ -32,15 +34,37 @@ export default function VendorsPage() {
     return Array.from(set).sort();
   }, [vendors]);
 
-  // Apply search + trade filter
+  // Toggle sort: same column flips direction; new column resets to asc
+  const handleSort = (key: 'Account_Name' | 'Industry') => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
+
+  // Apply search + trade filter + sort
   const filtered = useMemo(() => {
     if (!vendors) return [];
-    return vendors.filter((v: any) => {
+    const result = vendors.filter((v: any) => {
       const nameMatch = !search || (v.Account_Name || '').toLowerCase().includes(search.toLowerCase());
       const tradeMatch = !tradeFilter || v.Industry === tradeFilter;
       return nameMatch && tradeMatch;
     });
-  }, [vendors, search, tradeFilter]);
+
+    if (sortKey) {
+      result.sort((a: any, b: any) => {
+        const aVal = (a[sortKey] || '').toLowerCase();
+        const bVal = (b[sortKey] || '').toLowerCase();
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [vendors, search, tradeFilter, sortKey, sortDir]);
 
   if (isLoading) {
     return (
@@ -105,8 +129,36 @@ export default function VendorsPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trade</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('Account_Name')}
+                    className="flex items-center gap-1 group hover:text-brand-red transition-colors"
+                  >
+                    Vendor Name
+                    <span className="text-gray-400 group-hover:text-brand-red">
+                      {sortKey === 'Account_Name'
+                        ? sortDir === 'asc'
+                          ? <ChevronUp className="h-3.5 w-3.5" />
+                          : <ChevronDown className="h-3.5 w-3.5" />
+                        : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                    </span>
+                  </button>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('Industry')}
+                    className="flex items-center gap-1 group hover:text-brand-red transition-colors"
+                  >
+                    Trade
+                    <span className="text-gray-400 group-hover:text-brand-red">
+                      {sortKey === 'Industry'
+                        ? sortDir === 'asc'
+                          ? <ChevronUp className="h-3.5 w-3.5" />
+                          : <ChevronDown className="h-3.5 w-3.5" />
+                        : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                    </span>
+                  </button>
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City / State</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
