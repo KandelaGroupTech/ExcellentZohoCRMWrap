@@ -24,7 +24,7 @@ export default function VendorsPage() {
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
   const [editingVendor, setEditingVendor] = useState<any | null>(null);
-  const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | 'Vendor_Status' | null>(null);
+  const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | 'Rating' | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const { data: vendors, isLoading, error } = useQuery({
@@ -48,7 +48,7 @@ export default function VendorsPage() {
     return Array.from(set).sort();
   }, [vendors]);
 
-  const handleSort = (key: 'Account_Name' | 'Industry' | 'Vendor_Status') => {
+  const handleSort = (key: 'Account_Name' | 'Industry' | 'Rating') => {
     if (sortKey === key) {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -71,7 +71,7 @@ export default function VendorsPage() {
         const bVal = (b[sortKey] || '').toLowerCase();
         
         // Custom sort order for Status to keep Preferred at top when asc
-        if (sortKey === 'Vendor_Status') {
+        if (sortKey === 'Rating') {
           const statusOrder: Record<string, number> = { 'preferred': 1, 'backup': 2, 'used': 3, 'do not use': 4, '': 5 };
           const aRank = statusOrder[aVal] || 5;
           const bRank = statusOrder[bVal] || 5;
@@ -155,10 +155,10 @@ export default function VendorsPage() {
                   </button>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button onClick={() => handleSort('Vendor_Status')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
+                  <button onClick={() => handleSort('Rating')} className="flex items-center gap-1 group hover:text-brand-red transition-colors">
                     Status
                     <span className="text-gray-400 group-hover:text-brand-red">
-                      {sortKey === 'Vendor_Status' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
+                      {sortKey === 'Rating' ? (sortDir === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />) : <ChevronsUpDown className="h-3.5 w-3.5" />}
                     </span>
                   </button>
                 </th>
@@ -191,18 +191,18 @@ export default function VendorsPage() {
                         {vendor.Account_Name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {getStatusBadge(vendor.Vendor_Status)}
+                        {getStatusBadge(vendor.Rating)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {vendor.Industry || '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {vendor.POC_Name ? (
+                        {vendor.Ticker_Symbol ? (
                           <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{vendor.POC_Name}</span>
-                            {vendor.POC_Phone && (
-                              <a href={`tel:${vendor.POC_Phone}`} className="text-gray-500 hover:text-brand-red text-xs mt-0.5" onClick={(e) => e.stopPropagation()}>
-                                {vendor.POC_Phone}
+                            <span className="font-medium text-gray-900">{vendor.Ticker_Symbol}</span>
+                            {vendor.Fax && (
+                              <a href={`tel:${vendor.Fax}`} className="text-gray-500 hover:text-brand-red text-xs mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                {vendor.Fax}
                               </a>
                             )}
                           </div>

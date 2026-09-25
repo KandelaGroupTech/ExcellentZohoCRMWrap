@@ -34,9 +34,9 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       setPhone(vendor.Phone || '');
       setEmail(vendor.Email || '');
       setNotes(vendor.Description || '');
-      setStatus(vendor.Vendor_Status || '');
-      setPocName(vendor.POC_Name || '');
-      setPocPhone(vendor.POC_Phone || '');
+      setStatus(vendor.Rating || '');
+      setPocName(vendor.Ticker_Symbol || '');
+      setPocPhone(vendor.Fax || '');
     }
   }, [vendor]);
 
@@ -69,9 +69,9 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       Phone: phone, 
       Email: email, 
       Description: notes,
-      Vendor_Status: status,
-      POC_Name: pocName,
-      POC_Phone: pocPhone
+      Rating: status,
+      Ticker_Symbol: pocName,
+      Fax: pocPhone
     });
   };
 
