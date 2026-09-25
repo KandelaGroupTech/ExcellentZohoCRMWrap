@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, Contact, Building, Menu, X, Store } from "lucide-react";
 import HeaderActions from "./components/HeaderActions";
-import { useState } from "react";
+import PullToRefresh from "./components/PullToRefresh";
 
 export default function DashboardLayout({
   children,
@@ -77,9 +77,9 @@ export default function DashboardLayout({
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-8 pb-20 md:pb-8">
+        <PullToRefresh className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
           {children}
-        </main>
+        </PullToRefresh>
 
         {/* Bottom Navigation Bar for Mobile */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-brand-black border-t border-gray-800 z-40 flex items-center justify-around px-2 pb-safe">
