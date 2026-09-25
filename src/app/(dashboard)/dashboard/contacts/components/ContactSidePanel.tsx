@@ -1,4 +1,4 @@
-import { X, Edit2, Trash2, Mail, Phone, Building2, User } from 'lucide-react';
+import { X, Edit2, Trash2, Mail, Phone, Building2, User, UserPlus } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
 import { useState, useEffect } from 'react';
@@ -26,6 +26,20 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
   const fullName = `${contact?.First_Name || ''} ${contact?.Last_Name || ''}`.trim() || 'Unnamed Contact';
   const accountName = typeof contact?.Account_Name === 'object' ? contact?.Account_Name?.name : contact?.Account_Name;
+
+  const handleSaveToPhone = () => {
+    if (!contact) return;
+    const vcard = `BEGIN:VCARD\r\nVERSION:3.0\r\nN:${contact.Last_Name || ''};${contact.First_Name || ''};;;\r\nFN:${fullName}\r\nORG:${accountName || ''}\r\nTITLE:${contact.Title || ''}\r\nTEL;TYPE=WORK,VOICE:${contact.Phone || ''}\r\nEMAIL;TYPE=PREF,INTERNET:${contact.Email || ''}\r\nEND:VCARD`;
+    const blob = new Blob([vcard], { type: 'text/vcard' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${fullName.replace(/\s+/g, '_')}.vcf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return createPortal(
     <>
@@ -89,6 +103,18 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
           
           {/* Quick Contact Links (Mobile Friendly) */}
           <div className="flex flex-col gap-3">
+              <button 
+                onClick={handleSaveToPhone}
+                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group text-left w-full"
+              >
+                <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3 shrink-0">
+                  <UserPlus className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-0.5">Save to Phone</p>
+                  <p className="text-sm font-medium text-brand-red">Add Contact</p>
+                </div>
+              </button>
             {contact?.Phone && (
               <a 
                 href={`tel:${contact.Phone}`}
@@ -157,5 +183,6 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
     document.body
   );
 }
+
 
 
