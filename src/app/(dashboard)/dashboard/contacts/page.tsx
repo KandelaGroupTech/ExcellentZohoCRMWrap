@@ -9,11 +9,14 @@ import DataTable from '../../components/DataTable';
 import CreateContactModal from '../../components/CreateContactModal';
 import EditModal from '../../components/EditModal';
 
+import ContactSidePanel from './components/ContactSidePanel';
+
 export default function ContactsPage() {
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
+  const [selectedContact, setSelectedContact] = useState<any | null>(null);
   
   const queryClient = useQueryClient();
 
@@ -33,6 +36,10 @@ export default function ContactsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
       toast.success('Contact updated successfully');
+      // If we are currently viewing the updated contact in the side panel, update its state
+      if (selectedContact && editingRecord && selectedContact.id === editingRecord.id) {
+        setSelectedContact({ ...selectedContact, ...editingRecord });
+      }
     },
     onError: (err: any) => {
       toast.error(err.message || 'Failed to update contact');
@@ -53,6 +60,7 @@ export default function ContactsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
       toast.success('Contact deleted successfully');
+      setSelectedContact(null);
     },
     onError: (err: any) => {
       toast.error(err.message || 'Failed to delete contact');
@@ -94,7 +102,11 @@ export default function ContactsPage() {
     { 
       key: 'First_Name', 
       label: 'Name',
-      render: (row: any) => `${row.First_Name || ''} ${row.Last_Name || ''}`.trim() || '-'
+      render: (row: any) => (
+        <span className="font-medium text-brand-red hover:underline cursor-pointer">
+          {`${row.First_Name || ''} ${row.Last_Name || ''}`.trim() || '-'}
+        </span>
+      )
     },
     { key: 'Account_Name', label: 'Account' },
     { key: 'Email', label: 'Email' },
@@ -104,7 +116,7 @@ export default function ContactsPage() {
       key: 'actions',
       label: '',
       render: (row: any) => isAdmin ? (
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
           <button 
             onClick={() => setEditingRecord(row)}
             className="text-gray-400 hover:text-brand-red transition-colors p-1"
@@ -141,10 +153,21 @@ export default function ContactsPage() {
           columns={columns} 
           searchPlaceholder="Search by Name..." 
           searchKey={['First_Name', 'Last_Name']} 
+          onRowClick={(row) => setSelectedContact(row)}
         />
       </div>
       <CreateContactModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       
+      {/* Side Panel for viewing Contact profile */}
+      <ContactSidePanel
+        contact={selectedContact}
+        isOpen={!!selectedContact}
+        onClose={() => setSelectedContact(null)}
+        onEdit={(c) => setEditingRecord(c)}
+        onDelete={(id) => handleDelete(id)}
+      />
+
+      {/* Edit Modal (opens over the side panel if needed) */}
       {editingRecord && (
         <EditModal
           isOpen={true}
@@ -160,6 +183,7 @@ export default function ContactsPage() {
           initialData={editingRecord}
           onSave={async (data) => {
             await updateMutation.mutateAsync({ id: editingRecord.id, data });
+            // The side panel will read updated data if we successfully mutate, but we handled that in onSuccess
           }}
         />
       )}

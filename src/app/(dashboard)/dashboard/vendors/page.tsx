@@ -89,7 +89,7 @@ export default function VendorsPage() {
     }
 
     return result;
-  }, [vendors, search, tradeFilter, sortKey, sortDir]);
+  }, [vendors, search, tradeFilter, statusFilter, sortKey, sortDir]);
 
   if (isLoading) {
     return (
