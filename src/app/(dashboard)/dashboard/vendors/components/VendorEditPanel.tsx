@@ -119,7 +119,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
 
       {/* Panel */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50/95 backdrop-blur-md shadow-xl flex flex-col h-[100dvh] transition-transform duration-300 ${
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50 shadow-xl flex flex-col h-[100dvh] transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -304,5 +304,6 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
     document.body
   );
 }
+
 
 

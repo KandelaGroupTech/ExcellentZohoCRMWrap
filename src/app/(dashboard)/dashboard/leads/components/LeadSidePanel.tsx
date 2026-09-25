@@ -38,7 +38,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
 
       {/* Slide-out Panel */}
       <div 
-        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50/95 backdrop-blur-md shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50 shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -166,4 +166,5 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
     document.body
   );
 }
+
 
