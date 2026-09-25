@@ -126,20 +126,37 @@ export async function fetchAccounts() {
   const domain = 'https://www.zohoapis.com';
 
   const fields = 'Account_Name,Industry,Website,Phone';
-  // Exclude vendor-type accounts — vendors are managed on the Vendors page
-  const response = await fetch(
-    `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:not_equal:Vendor)&fields=${fields}&per_page=200`,
-    {
-      method: 'GET',
-      headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
-      cache: 'no-store'
-    }
-  );
+  let allAccounts: any[] = [];
+  let page = 1;
+  let hasMore = true;
 
-  if (response.status === 204) return [];
-  if (!response.ok) throw new Error('Failed to fetch accounts from Zoho');
-  const data = await response.json();
-  return data.data || [];
+  while (hasMore) {
+    const response = await fetch(
+      `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:not_equal:Vendor)&fields=${fields}&per_page=200&page=${page}`,
+      {
+        method: 'GET',
+        headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+        cache: 'no-store'
+      }
+    );
+
+    if (response.status === 204) break;
+    if (!response.ok) throw new Error('Failed to fetch accounts from Zoho');
+    
+    const data = await response.json();
+    if (data.data && data.data.length > 0) {
+      allAccounts = allAccounts.concat(data.data);
+      if (data.info && data.info.more_records) {
+        page++;
+      } else {
+        hasMore = false;
+      }
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return allAccounts;
 }
 
 export async function fetchVendors() {
@@ -147,20 +164,37 @@ export async function fetchVendors() {
   const domain = 'https://www.zohoapis.com';
 
   const fields = 'Account_Name,Industry,Billing_City,Billing_State,Phone,Email,Description,Account_Type';
-  // Search for accounts where Account_Type = Vendor
-  const response = await fetch(
-    `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:equals:Vendor)&fields=${fields}&per_page=200`,
-    {
-      method: 'GET',
-      headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
-      cache: 'no-store'
-    }
-  );
+  let allVendors: any[] = [];
+  let page = 1;
+  let hasMore = true;
 
-  if (response.status === 204) return [];
-  if (!response.ok) throw new Error('Failed to fetch vendors from Zoho');
-  const data = await response.json();
-  return data.data || [];
+  while (hasMore) {
+    const response = await fetch(
+      `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:equals:Vendor)&fields=${fields}&per_page=200&page=${page}`,
+      {
+        method: 'GET',
+        headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+        cache: 'no-store'
+      }
+    );
+
+    if (response.status === 204) break;
+    if (!response.ok) throw new Error('Failed to fetch vendors from Zoho');
+    
+    const data = await response.json();
+    if (data.data && data.data.length > 0) {
+      allVendors = allVendors.concat(data.data);
+      if (data.info && data.info.more_records) {
+        page++;
+      } else {
+        hasMore = false;
+      }
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return allVendors;
 }
 
 export async function fetchAccount(id: string) {
