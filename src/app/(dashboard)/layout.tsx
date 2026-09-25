@@ -79,7 +79,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Content */}
-        <PullToRefresh className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
+        <PullToRefresh className="flex-1 flex flex-col min-h-0 p-4 md:p-8 pb-20 md:pb-8">
           {children}
         </PullToRefresh>
 

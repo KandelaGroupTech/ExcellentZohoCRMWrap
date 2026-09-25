@@ -22,8 +22,11 @@ export default function PullToRefresh({ children, className = '' }: PullToRefres
   const MAX_PULL = 120;
 
   const onTouchStart = (e: React.TouchEvent) => {
-    // Only allow pull-to-refresh if we are at the absolute top of the container
-    if (scrollRef.current && scrollRef.current.scrollTop <= 0) {
+    const target = e.target as HTMLElement;
+    const scrollable = target.closest('.overflow-auto, .overflow-y-auto') as HTMLElement | null;
+    
+    // Only allow pull-to-refresh if the touched scrollable container is at the top
+    if (!scrollable || scrollable.scrollTop <= 0) {
       startYRef.current = e.touches[0].clientY;
       isPullingRef.current = true;
     }
@@ -35,9 +38,16 @@ export default function PullToRefresh({ children, className = '' }: PullToRefres
     const currentY = e.touches[0].clientY;
     const diff = currentY - startYRef.current;
     
-    if (diff > 0 && scrollRef.current && scrollRef.current.scrollTop <= 0) {
-      // Add resistance by multiplying by 0.5
-      setPullDistance(Math.min(diff * 0.5, MAX_PULL));
+    if (diff > 0) {
+      const target = e.target as HTMLElement;
+      const scrollable = target.closest('.overflow-auto, .overflow-y-auto') as HTMLElement | null;
+      if (!scrollable || scrollable.scrollTop <= 0) {
+        // Add resistance by multiplying by 0.5
+        setPullDistance(Math.min(diff * 0.5, MAX_PULL));
+      } else {
+        isPullingRef.current = false;
+        setPullDistance(0);
+      }
     } else {
       // If we scroll down (diff < 0), cancel the pull
       isPullingRef.current = false;
@@ -54,7 +64,6 @@ export default function PullToRefresh({ children, className = '' }: PullToRefres
       setPullDistance(60); // Snap back to loading position
       
       try {
-        // Trigger global React Query refresh across all active queries
         await queryClient.refetchQueries();
       } finally {
         setIsRefreshing(false);
@@ -68,7 +77,7 @@ export default function PullToRefresh({ children, className = '' }: PullToRefres
   return (
     <main 
       ref={scrollRef}
-      className={`relative overflow-auto overscroll-y-none ${className}`}
+      className={`relative overflow-hidden overscroll-y-none ${className}`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
