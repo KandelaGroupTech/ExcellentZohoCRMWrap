@@ -23,17 +23,17 @@ export default function RootLayout({
       <html lang="en">
         <head>
           {/* Standard favicon */}
-          <link rel="icon" href="/favicon-crm/icon.ico" sizes="any" />
+          <link rel="icon" href="/website-demos/excellentzohocrm/favicon-crm/icon.ico" sizes="any" />
           
           {/* iOS home screen icon */}
-          <link rel="apple-touch-icon" sizes="180x180" href="/favicon-crm/icon-180x180.png" />
+          <link rel="apple-touch-icon" sizes="180x180" href="/website-demos/excellentzohocrm/favicon-crm/icon-180x180.png" />
           
           {/* iPad */}
-          <link rel="apple-touch-icon" sizes="167x167" href="/favicon-crm/icon-167x167.png" />
-          <link rel="apple-touch-icon" sizes="152x152" href="/favicon-crm/icon-152x152.png" />
+          <link rel="apple-touch-icon" sizes="167x167" href="/website-demos/excellentzohocrm/favicon-crm/icon-167x167.png" />
+          <link rel="apple-touch-icon" sizes="152x152" href="/website-demos/excellentzohocrm/favicon-crm/icon-152x152.png" />
           
           {/* Android / PWA manifest (also covers Chrome install prompt) */}
-          <link rel="manifest" href="/site.webmanifest" />
+          <link rel="manifest" href="/website-demos/excellentzohocrm/site.webmanifest" />
           
           {/* iOS PWA behavior tags */}
           <meta name="apple-mobile-web-app-capable" content="yes" />
