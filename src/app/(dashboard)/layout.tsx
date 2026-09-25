@@ -3,7 +3,7 @@
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Contact, Building, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, Contact, Building, Menu, X, Store } from "lucide-react";
 import HeaderActions from "./components/HeaderActions";
 import { useState } from "react";
 
@@ -19,6 +19,7 @@ export default function DashboardLayout({
     { name: "Leads", href: "/dashboard/leads", icon: Users },
     { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
     { name: "Accounts", href: "/dashboard/accounts", icon: Building },
+    { name: "Vendors", href: "/dashboard/vendors", icon: Store },
   ];
 
   return (

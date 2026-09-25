@@ -138,6 +138,27 @@ export async function fetchAccounts() {
   return data.data || [];
 }
 
+export async function fetchVendors() {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+
+  const fields = 'Account_Name,Industry,Billing_City,Billing_State,Phone,Email,Description,Account_Type';
+  // Search for accounts where Account_Type = Vendor
+  const response = await fetch(
+    `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:equals:Vendor)&fields=${fields}&per_page=200`,
+    {
+      method: 'GET',
+      headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+      cache: 'no-store'
+    }
+  );
+
+  if (response.status === 204) return [];
+  if (!response.ok) throw new Error('Failed to fetch vendors from Zoho');
+  const data = await response.json();
+  return data.data || [];
+}
+
 export async function fetchAccount(id: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
