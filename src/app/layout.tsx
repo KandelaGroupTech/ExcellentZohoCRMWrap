@@ -21,6 +21,28 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          {/* Standard favicon */}
+          <link rel="icon" href="/favicon-crm/icon.ico" sizes="any" />
+          
+          {/* iOS home screen icon */}
+          <link rel="apple-touch-icon" sizes="180x180" href="/favicon-crm/icon-180x180.png" />
+          
+          {/* iPad */}
+          <link rel="apple-touch-icon" sizes="167x167" href="/favicon-crm/icon-167x167.png" />
+          <link rel="apple-touch-icon" sizes="152x152" href="/favicon-crm/icon-152x152.png" />
+          
+          {/* Android / PWA manifest (also covers Chrome install prompt) */}
+          <link rel="manifest" href="/site.webmanifest" />
+          
+          {/* iOS PWA behavior tags */}
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-title" content="JOB CRM" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+          
+          {/* Theme color for browser chrome / Android task switcher */}
+          <meta name="theme-color" content="#910000" />
+        </head>
         <body className={`${inter.variable} ${outfit.variable} font-sans`}>
           <ReactQueryProvider>
             {children}
