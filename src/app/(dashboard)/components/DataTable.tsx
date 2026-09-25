@@ -13,24 +13,34 @@ interface DataTableProps {
   data: any[];
   columns: Column[];
   searchPlaceholder?: string;
-  searchKey: string; // The property name in the data to filter by
+  searchKey?: string | string[]; // Can be a single key or array of keys
+  searchFn?: (row: any, query: string) => boolean; // Optional custom search logic
   onRowClick?: (row: any) => void;
 }
 
-export default function DataTable({ data, columns, searchPlaceholder = "Search...", searchKey, onRowClick }: DataTableProps) {
+export default function DataTable({ data, columns, searchPlaceholder = "Search...", searchKey, searchFn, onRowClick }: DataTableProps) {
   const [query, setQuery] = useState('');
 
   const filteredData = data.filter((row) => {
     if (!query) return true;
-    
-    // Simple deep access or direct string check
-    const val = row[searchKey];
-    if (!val) return false;
+    const lowerQuery = query.toLowerCase();
 
-    // Handle lookup objects (e.g. Account_Name.name)
-    const strVal = typeof val === 'object' && val.name ? val.name : String(val);
+    // Use custom search function if provided
+    if (searchFn) return searchFn(row, lowerQuery);
     
-    return strVal.toLowerCase().includes(query.toLowerCase());
+    // Otherwise use searchKey(s)
+    const keys = Array.isArray(searchKey) ? searchKey : [searchKey];
+    
+    // Combine the values of all search keys into one string (separated by space)
+    // This allows searching "First Last" against ['First_Name', 'Last_Name']
+    const combinedVal = keys.map(k => {
+      if (!k) return '';
+      const val = row[k as string];
+      if (!val) return '';
+      return typeof val === 'object' && val.name ? val.name : String(val);
+    }).join(' ');
+
+    return combinedVal.toLowerCase().includes(lowerQuery);
   });
 
   return (

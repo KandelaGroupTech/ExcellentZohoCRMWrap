@@ -139,8 +139,8 @@ export default function ContactsPage() {
         <DataTable 
           data={contacts || []} 
           columns={columns} 
-          searchPlaceholder="Search by Last Name..." 
-          searchKey="Last_Name" 
+          searchPlaceholder="Search by Name..." 
+          searchKey={['First_Name', 'Last_Name']} 
         />
       </div>
       <CreateContactModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
