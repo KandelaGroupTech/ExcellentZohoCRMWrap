@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
-import { formatPhoneNumber } from '../../../../lib/utils';
+import { formatPhoneNumber } from '../../../../../lib/utils';
 
 interface VendorEditPanelProps {
   vendor: any | null;
