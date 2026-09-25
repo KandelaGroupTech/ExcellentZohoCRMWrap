@@ -119,8 +119,12 @@ export default function VendorsPage() {
                 filtered.map((vendor: any, idx: number) => {
                   const cityState = [vendor.Billing_City, vendor.Billing_State].filter(Boolean).join(', ');
                   return (
-                    <tr key={vendor.id || idx} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr
+                      key={vendor.id || idx}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => setEditingVendor(vendor)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-red hover:underline">
                         {vendor.Account_Name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -131,14 +135,22 @@ export default function VendorsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {vendor.Phone ? (
-                          <a href={`tel:${vendor.Phone}`} className="text-brand-red hover:underline">
+                          <a
+                            href={`tel:${vendor.Phone}`}
+                            className="text-brand-red hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {vendor.Phone}
                           </a>
                         ) : '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {vendor.Email ? (
-                          <a href={`mailto:${vendor.Email}`} className="text-brand-red hover:underline">
+                          <a
+                            href={`mailto:${vendor.Email}`}
+                            className="text-brand-red hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             {vendor.Email}
                           </a>
                         ) : '—'}
@@ -148,7 +160,10 @@ export default function VendorsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <button
-                          onClick={() => setEditingVendor(vendor)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingVendor(vendor);
+                          }}
                           className="p-1 text-gray-400 hover:text-brand-red transition-colors"
                           title="Edit vendor"
                         >

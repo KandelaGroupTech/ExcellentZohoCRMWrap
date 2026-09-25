@@ -21,10 +21,12 @@ export async function PUT(req: Request, { params }: { params: { vendorId: string
 
   try {
     const data = await req.json();
-    // Only allow updating Industry (Trade) and Description (Notes)
+    // Allow updating Trade (Industry), Notes (Description), Phone, and Email
     const allowed: any = {};
     if (data.Industry !== undefined) allowed.Industry = data.Industry;
     if (data.Description !== undefined) allowed.Description = data.Description;
+    if (data.Phone !== undefined) allowed.Phone = data.Phone;
+    if (data.Email !== undefined) allowed.Email = data.Email;
     const result = await updateAccount(params.vendorId, allowed);
     return NextResponse.json(result);
   } catch (error: any) {
