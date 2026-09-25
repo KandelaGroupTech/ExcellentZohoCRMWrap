@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 interface CallData {
   entityId: string;
-  entityType: 'Contacts' | 'Leads' | 'Accounts';
+  entityType: 'Contacts' | 'Leads' | 'Accounts' | 'Deals';
   name?: string;
 }
 
@@ -167,5 +167,6 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
     </CallLoggerContext.Provider>
   );
 }
+
 
 
