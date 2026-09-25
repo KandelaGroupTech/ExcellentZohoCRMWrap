@@ -5,12 +5,16 @@ export default function SearchableSelect({
   options,
   value,
   onChange,
-  placeholder
+  placeholder,
+  allowCreate = false,
+  searchPlaceholder = "Search..."
 }: {
   options: string[],
   value: string,
   onChange: (val: string) => void,
-  placeholder: string
+  placeholder: string,
+  allowCreate?: boolean,
+  searchPlaceholder?: string
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -27,6 +31,8 @@ export default function SearchableSelect({
   }, []);
 
   const filtered = options.filter(opt => opt.toLowerCase().includes(search.toLowerCase()));
+  const exactMatch = options.some(opt => opt.toLowerCase() === search.trim().toLowerCase());
+  const showCreate = allowCreate && search.trim().length > 0 && !exactMatch;
 
   return (
     <div className="relative w-full" ref={containerRef}>
@@ -48,7 +54,7 @@ export default function SearchableSelect({
               <input 
                 type="text" 
                 className="w-full pl-8 pr-3 py-1.5 text-sm border-gray-300 rounded-md focus:ring-brand-red focus:border-brand-red border"
-                placeholder="Search trades..."
+                placeholder={searchPlaceholder}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 autoFocus
@@ -71,7 +77,15 @@ export default function SearchableSelect({
                 {opt}
               </div>
             ))}
-            {filtered.length === 0 && (
+            {showCreate && (
+              <div 
+                className="px-3 py-2 text-sm cursor-pointer rounded-md hover:bg-gray-100 text-brand-red font-medium"
+                onClick={() => { onChange(search.trim()); setIsOpen(false); }}
+              >
+                Create "{search.trim()}"
+              </div>
+            )}
+            {!showCreate && filtered.length === 0 && (
               <div className="px-3 py-2 text-sm text-gray-500">No matches</div>
             )}
           </div>

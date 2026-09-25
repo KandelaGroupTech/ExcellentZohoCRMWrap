@@ -86,7 +86,9 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
       Call_Type: 'Outbound',
       Call_Result: result,
       Description: notes || '',
-      Call_Start_Time: new Date().toISOString()
+      Call_Start_Time: new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00'),
+      Call_Duration: '00:05',
+      Outgoing_Call_Status: 'Completed'
     };
 
     if (modalData.entityType === 'Accounts') {

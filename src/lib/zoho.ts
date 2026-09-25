@@ -321,13 +321,13 @@ async function createRecord(module: string, recordData: any) {
 
   const responseData = await response.json();
   
-  // Zoho returns a 201 or 202 status for success, but checking the specific data object status is safer
   if (responseData.data && responseData.data[0] && responseData.data[0].status === 'success') {
     return responseData.data[0].details;
   }
 
-  console.error(`Failed to create ${module}:`, responseData);
-  throw new Error(`Failed to create ${module} in Zoho`);
+  console.error(`Failed to create ${module}:`, JSON.stringify(responseData));
+  const zohoError = responseData.data?.[0]?.message || responseData.message || JSON.stringify(responseData);
+  throw new Error(zohoError || `Failed to create ${module} in Zoho`);
 }
 
 async function updateRecord(module: string, recordId: string, recordData: any) {
@@ -569,3 +569,4 @@ export async function createNote(data: { Parent_Id: string, Note_Content: string
   console.error('Failed to create note, Zoho response:', JSON.stringify(responseData));
   throw new Error(`Zoho error: ${zohoError}`);
 }
+
