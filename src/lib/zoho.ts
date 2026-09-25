@@ -159,6 +159,32 @@ export async function fetchAccounts() {
   return allAccounts;
 }
 
+export async function createAccount(accountData: any) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+
+  const response = await fetch(`${domain}/crm/v6/Accounts`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Zoho-oauthtoken ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ data: [{ ...accountData, Account_Type: 'Customer' }] })
+  });
+
+  const responseText = await response.text();
+  console.log('Zoho Create Account Response:', responseText);
+
+  if (!response.ok) throw new Error(`Failed to create account: ${responseText}`);
+  const data = JSON.parse(responseText);
+  
+  if (data.data && data.data[0].status === 'success') {
+    return data.data[0].details;
+  } else {
+    throw new Error(`Failed to create account: ${data.data?.[0]?.message || 'Unknown error'}`);
+  }
+}
+
 export async function fetchVendors() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
@@ -195,6 +221,41 @@ export async function fetchVendors() {
   }
 
   return allVendors;
+}
+
+export async function createVendor(vendorData: any) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+
+  const payload: any = {
+    Account_Name: vendorData.Vendor_Name,
+    Account_Type: 'Vendor',
+    Phone: vendorData.Phone,
+    Email: vendorData.Email,
+    Website: vendorData.Website,
+    Industry: vendorData.Category
+  };
+
+  const response = await fetch(`${domain}/crm/v6/Accounts`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Zoho-oauthtoken ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ data: [payload] })
+  });
+
+  const responseText = await response.text();
+  console.log('Zoho Create Vendor Response:', responseText);
+
+  if (!response.ok) throw new Error(`Failed to create vendor: ${responseText}`);
+  const data = JSON.parse(responseText);
+  
+  if (data.data && data.data[0].status === 'success') {
+    return data.data[0].details;
+  } else {
+    throw new Error(`Failed to create vendor: ${data.data?.[0]?.message || 'Unknown error'}`);
+  }
 }
 
 export async function fetchAccount(id: string) {

@@ -18,6 +18,8 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   const isAdmin = orgRole === 'org:admin';
   const queryClient = useQueryClient();
 
+  if (!vendor && !isOpen) return null;
+
   const [trade, setTrade] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');

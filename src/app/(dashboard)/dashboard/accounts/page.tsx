@@ -2,17 +2,22 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Edit2 } from 'lucide-react';
+import { Loader2, Edit2, Plus } from 'lucide-react';
 import DataTable from '../../components/DataTable';
 import AccountSlideOver from './components/AccountSlideOver';
 import EditModal from '../../components/EditModal';
+import CreateAccountModal from '../../components/CreateAccountModal';
+import { useAuth } from '@clerk/nextjs';
 
 export default function AccountsPage() {
   const queryClient = useQueryClient();
+  const { orgRole } = useAuth();
+  const isAdmin = orgRole === 'org:admin';
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedAccountName, setSelectedAccountName] = useState('');
   
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: accounts, isLoading, error } = useQuery({
     queryKey: ['accounts'],
@@ -84,6 +89,12 @@ export default function AccountsPage() {
     <div className="flex flex-col h-full overflow-hidden relative">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-medium text-gray-900">Accounts</h2>
+        {isAdmin && (
+          <button onClick={() => setIsModalOpen(true)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90">
+            <Plus className="h-4 w-4 mr-2" />
+            New Account
+          </button>
+        )}
       </div>
       <div className="flex-1 overflow-hidden">
         <DataTable 
@@ -98,6 +109,8 @@ export default function AccountsPage() {
           onEdit={(row) => setEditingRecord(row)}
         />
       </div>
+
+      <CreateAccountModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       <AccountSlideOver 
         accountId={selectedAccountId}

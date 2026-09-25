@@ -2,10 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail } from 'lucide-react';
+import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail, Plus } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
 import VendorEditPanel from './components/VendorEditPanel';
 import SwipeableCard from '../../components/SwipeableCard';
 import { useCallLogger } from '../../components/CallLoggerProvider';
+import CreateVendorModal from '../../components/CreateVendorModal';
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -24,6 +26,9 @@ const getStatusBadge = (status: string) => {
 
 export default function VendorsPage() {
   const { registerCallClick } = useCallLogger();
+  const { orgRole } = useAuth();
+  const isAdmin = orgRole === 'org:admin';
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -116,6 +121,12 @@ export default function VendorsPage() {
     <div className="flex flex-col h-full overflow-hidden relative">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-medium text-gray-900">Vendors</h2>
+        {isAdmin && (
+          <button onClick={() => setIsModalOpen(true)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90">
+            <Plus className="h-4 w-4 mr-2" />
+            New Vendor
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col bg-white rounded-lg shadow border border-gray-200">
@@ -355,6 +366,8 @@ export default function VendorsPage() {
           </div>
         </div>
       </div>
+
+      <CreateVendorModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       <VendorEditPanel
         vendor={editingVendor}
