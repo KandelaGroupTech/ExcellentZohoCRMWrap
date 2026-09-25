@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
@@ -79,9 +80,14 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   const cityState = [vendor?.Billing_City, vendor?.Billing_State].filter(Boolean).join(', ');
   const inputClass = "block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-brand-red focus:border-brand-red disabled:bg-gray-50 disabled:text-gray-400 bg-white";
 
-  if (!vendor && !isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  return (
+  if ((!vendor && !isOpen) || !mounted) return null;
+
+  return createPortal(
     <>
       {/* Backdrop */}
       {isOpen && (
@@ -267,7 +273,8 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
           </div>
         )}
       </div>
-    </>
+    </>,
+    document.body
   );
 }
 

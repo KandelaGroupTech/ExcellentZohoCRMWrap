@@ -1,6 +1,8 @@
 import { X, Edit2, Trash2, Mail, Phone, Building2, User } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ContactSidePanelProps {
   contact: any | null;
@@ -14,13 +16,18 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
   const { registerCallClick } = useCallLogger();
+  const [mounted, setMounted] = useState(false);
 
-  if (!contact && !isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if ((!contact && !isOpen) || !mounted) return null;
 
   const fullName = `${contact?.First_Name || ''} ${contact?.Last_Name || ''}`.trim() || 'Unnamed Contact';
   const accountName = typeof contact?.Account_Name === 'object' ? contact?.Account_Name?.name : contact?.Account_Name;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       {isOpen && (
@@ -146,6 +153,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

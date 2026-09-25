@@ -1,6 +1,8 @@
 import { X, Edit2, Trash2, Mail, Phone, Building2, User, Target } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface LeadSidePanelProps {
   lead: any | null;
@@ -14,12 +16,17 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
   const { registerCallClick } = useCallLogger();
+  const [mounted, setMounted] = useState(false);
 
-  if (!lead && !isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if ((!lead && !isOpen) || !mounted) return null;
 
   const fullName = `${lead?.First_Name || ''} ${lead?.Last_Name || ''}`.trim() || 'Unnamed Lead';
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       {isOpen && (
@@ -155,6 +162,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
 
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

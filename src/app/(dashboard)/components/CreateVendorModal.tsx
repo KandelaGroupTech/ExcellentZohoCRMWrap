@@ -146,7 +146,7 @@ export default function CreateVendorModal({ isOpen, onClose }: { isOpen: boolean
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="New Vendor">
+    <Modal isOpen={isOpen} onClose={onClose} title="New Vendor" maxWidth="max-w-lg" overflowVisible={true}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Vendor Name</label>
