@@ -31,36 +31,33 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
     pendingCallRef.current = data;
     blurFiredRef.current = false;
 
-    const onBlur = () => {
-      blurFiredRef.current = true;
-      window.removeEventListener('blur', onBlur);
-      window.addEventListener('focus', onFocus);
-    };
-
-    const onFocus = () => {
-      window.removeEventListener('focus', onFocus);
-      if (blurFiredRef.current && pendingCallRef.current) {
-        setModalData(pendingCallRef.current);
-        pendingCallRef.current = null;
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        blurFiredRef.current = true;
+      } else if (document.visibilityState === 'visible' && blurFiredRef.current) {
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+        if (pendingCallRef.current) {
+          setModalData(pendingCallRef.current);
+          pendingCallRef.current = null;
+        }
       }
     };
 
-    // Listen for blur which happens when native dialer opens
-    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
-    // If the browser doesn't lose focus within 2 seconds (e.g. desktop environment without dialer app)
-    // we cancel the listener so the modal doesn't pop up randomly later.
+    // Give them 10 seconds to confirm the OS "Call" prompt.
+    // If they cancel or stay in the app, clean up so it doesn't fire later.
     setTimeout(() => {
       if (!blurFiredRef.current) {
-        window.removeEventListener('blur', onBlur);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
         pendingCallRef.current = null;
       }
-    }, 2000);
+    }, 10000);
   };
 
   const logCallMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const res = await fetch('/api/calls', {
+      const res = await fetch('/website-demos/excellentzohocrm/api/calls', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
