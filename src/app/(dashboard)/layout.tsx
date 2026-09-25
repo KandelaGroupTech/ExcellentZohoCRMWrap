@@ -7,6 +7,7 @@ import { LayoutDashboard, Users, Contact, Building, Menu, X, Store } from "lucid
 import HeaderActions from "./components/HeaderActions";
 import PullToRefresh from "./components/PullToRefresh";
 import { CallLoggerProvider } from "./components/CallLoggerProvider";
+import InteractiveBackground from "./components/InteractiveBackground";
 
 export default function DashboardLayout({
   children,
@@ -24,7 +25,8 @@ export default function DashboardLayout({
 
   return (
     <CallLoggerProvider>
-      <div className="flex h-[100dvh] bg-[#D9D9D9] overflow-hidden">
+      <div className="flex h-[100dvh] bg-transparent overflow-hidden relative z-0">
+        <InteractiveBackground />
       {/* Sidebar for Desktop */}
       <div className="hidden md:flex inset-y-0 left-0 z-50 w-64 bg-brand-black border-r border-gray-800 flex-col">
         <div className="flex h-16 shrink-0 items-center px-6 border-b border-gray-800 font-bold text-lg text-white">

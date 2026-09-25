@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { X, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import { formatPhoneNumber } from '../../../../../lib/utils';
+import SearchableSelect from '../../../components/SearchableSelect';
 
 interface VendorEditPanelProps {
   vendor: any | null;
@@ -18,6 +19,25 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
   const queryClient = useQueryClient();
+
+  // Fetch all vendors to extract trades
+  const { data: allVendors } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/vendors');
+      if (!res.ok) throw new Error('Failed to fetch vendors');
+      return res.json();
+    }
+  });
+
+  const existingTrades = useMemo(() => {
+    if (!allVendors) return [];
+    const trades = new Set<string>();
+    allVendors.forEach((v: any) => {
+      if (v.Industry) trades.add(v.Industry);
+    });
+    return Array.from(trades).sort();
+  }, [allVendors]);
 
   const [trade, setTrade] = useState('');
   const [phone, setPhone] = useState('');
@@ -161,14 +181,21 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Trade (Industry)</label>
-                <input
-                  type="text"
-                  value={trade}
-                  onChange={(e) => setTrade(e.target.value)}
-                  disabled={!isAdmin || updateMutation.isPending}
-                  placeholder="e.g. Electrical..."
-                  className={inputClass}
-                />
+                {(!isAdmin || updateMutation.isPending) ? (
+                  <input
+                    type="text"
+                    value={trade}
+                    disabled
+                    className={inputClass}
+                  />
+                ) : (
+                  <SearchableSelect
+                    options={existingTrades}
+                    value={trade}
+                    onChange={setTrade}
+                    placeholder="Select trade..."
+                  />
+                )}
               </div>
             </div>
 
