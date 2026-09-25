@@ -1,5 +1,6 @@
 import { X, Edit2, Trash2, Mail, Phone, Building2, User } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
+import { useCallLogger } from '../../../components/CallLoggerProvider';
 
 interface ContactSidePanelProps {
   contact: any | null;
@@ -12,6 +13,7 @@ interface ContactSidePanelProps {
 export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onDelete }: ContactSidePanelProps) {
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
+  const { registerCallClick } = useCallLogger();
 
   if (!contact && !isOpen) return null;
 
@@ -83,6 +85,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
             {contact?.Phone && (
               <a 
                 href={`tel:${contact.Phone}`}
+                onClick={() => registerCallClick({ entityId: contact.id, entityType: 'Contacts', name: fullName })}
                 className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >
                 <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3">

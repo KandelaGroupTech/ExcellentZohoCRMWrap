@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail } from 'lucide-react';
 import VendorEditPanel from './components/VendorEditPanel';
 import SwipeableCard from '../../components/SwipeableCard';
+import { useCallLogger } from '../../components/CallLoggerProvider';
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -22,6 +23,7 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function VendorsPage() {
+  const { registerCallClick } = useCallLogger();
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -221,7 +223,14 @@ export default function VendorsPage() {
                             <div className="flex flex-col">
                               <span className="font-medium text-gray-900">{vendor.Ticker_Symbol}</span>
                               {vendor.Fax && (
-                                <a href={`tel:${vendor.Fax}`} className="text-gray-500 hover:text-brand-red text-xs mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                <a 
+                                  href={`tel:${vendor.Fax}`} 
+                                  className="text-gray-500 hover:text-brand-red text-xs mt-0.5" 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
+                                  }}
+                                >
                                   {vendor.Fax}
                                 </a>
                               )}
@@ -236,7 +245,10 @@ export default function VendorsPage() {
                             <a
                               href={`tel:${vendor.Phone}`}
                               className="text-brand-red hover:underline"
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
+                              }}
                             >
                               {vendor.Phone}
                             </a>
@@ -295,7 +307,14 @@ export default function VendorsPage() {
                         {vendor.Phone && (
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500">Main Phone</span>
-                            <a href={`tel:${vendor.Phone}`} className="text-brand-red font-medium" onClick={e => e.stopPropagation()}>
+                            <a 
+                              href={`tel:${vendor.Phone}`} 
+                              className="text-brand-red font-medium" 
+                              onClick={e => {
+                                e.stopPropagation();
+                                registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
+                              }}
+                            >
                               {vendor.Phone}
                             </a>
                           </div>
@@ -304,7 +323,14 @@ export default function VendorsPage() {
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500">POC: {vendor.Ticker_Symbol}</span>
                             {vendor.Fax && (
-                              <a href={`tel:${vendor.Fax}`} className="text-gray-700" onClick={e => e.stopPropagation()}>
+                              <a 
+                                href={`tel:${vendor.Fax}`} 
+                                className="text-gray-700" 
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
+                                }}
+                              >
                                 {vendor.Fax}
                               </a>
                             )}

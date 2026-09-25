@@ -1,5 +1,6 @@
 import { X, Edit2, Trash2, Mail, Phone, Building2, User, Target } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
+import { useCallLogger } from '../../../components/CallLoggerProvider';
 
 interface LeadSidePanelProps {
   lead: any | null;
@@ -12,6 +13,7 @@ interface LeadSidePanelProps {
 export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete }: LeadSidePanelProps) {
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
+  const { registerCallClick } = useCallLogger();
 
   if (!lead && !isOpen) return null;
 
@@ -82,6 +84,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
             {lead?.Phone && (
               <a 
                 href={`tel:${lead.Phone}`}
+                onClick={() => registerCallClick({ entityId: lead.id, entityType: 'Leads', name: fullName })}
                 className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >
                 <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3">

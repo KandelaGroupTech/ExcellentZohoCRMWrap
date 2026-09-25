@@ -6,6 +6,7 @@ import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X } from 'l
 import { useAuth, useUser } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import Modal from '../../components/Modal';
+import { useCallLogger } from '../../components/CallLoggerProvider';
 
 interface DealDetailModalProps {
   deal: any;
@@ -22,6 +23,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const queryClient = useQueryClient();
   const [newTaskSubject, setNewTaskSubject] = useState('');
   const { user } = useUser();
+  const { registerCallClick } = useCallLogger();
   const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
   const [newNoteContent, setNewNoteContent] = useState('');
   const [editingAmount, setEditingAmount] = useState(false);
@@ -289,7 +291,11 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                     <div className="font-medium text-gray-900">{deal.Contact_Name?.name}</div>
                     {contactDetails?.Phone && (
                       <div className="text-gray-600">
-                        <a href={`tel:${contactDetails.Phone}`} className="hover:text-brand-red transition-colors">
+                        <a 
+                          href={`tel:${contactDetails.Phone}`} 
+                          onClick={() => registerCallClick({ entityId: contactDetails.id, entityType: 'Contacts', name: deal.Contact_Name?.name })}
+                          className="hover:text-brand-red transition-colors"
+                        >
                           {contactDetails.Phone}
                         </a>
                       </div>
