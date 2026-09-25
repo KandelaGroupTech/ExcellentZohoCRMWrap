@@ -154,6 +154,8 @@ export default function ContactsPage() {
           searchPlaceholder="Search by Name..." 
           searchKey={['First_Name', 'Last_Name']} 
           onRowClick={(row) => setSelectedContact(row)}
+          onEdit={isAdmin ? (row) => setEditingRecord(row) : undefined}
+          onDelete={isAdmin ? (row) => handleDelete(row.id) : undefined}
         />
       </div>
       <CreateContactModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

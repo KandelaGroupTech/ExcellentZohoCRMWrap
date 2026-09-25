@@ -95,6 +95,7 @@ export default function AccountsPage() {
             setSelectedAccountId(row.id);
             setSelectedAccountName(row.Account_Name);
           }}
+          onEdit={(row) => setEditingRecord(row)}
         />
       </div>
 

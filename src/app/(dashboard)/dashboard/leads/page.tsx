@@ -9,11 +9,14 @@ import DataTable from '../../components/DataTable';
 import CreateLeadModal from '../../components/CreateLeadModal';
 import EditModal from '../../components/EditModal';
 
+import LeadSidePanel from './components/LeadSidePanel';
+
 export default function LeadsPage() {
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
+  const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -33,6 +36,9 @@ export default function LeadsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       toast.success('Lead updated successfully');
+      if (selectedLead && editingRecord && selectedLead.id === editingRecord.id) {
+        setSelectedLead({ ...selectedLead, ...editingRecord });
+      }
     },
     onError: (err: any) => {
       toast.error(err.message || 'Failed to update lead');
@@ -53,6 +59,7 @@ export default function LeadsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       toast.success('Lead deleted successfully');
+      setSelectedLead(null);
     },
     onError: (err: any) => {
       toast.error(err.message || 'Failed to delete lead');
@@ -94,7 +101,11 @@ export default function LeadsPage() {
     { 
       key: 'First_Name', 
       label: 'Name',
-      render: (row: any) => `${row.First_Name || ''} ${row.Last_Name || ''}`.trim() || '-'
+      render: (row: any) => (
+        <span className="font-medium text-brand-red hover:underline cursor-pointer">
+          {`${row.First_Name || ''} ${row.Last_Name || ''}`.trim() || '-'}
+        </span>
+      )
     },
     { key: 'Company', label: 'Company' },
     { key: 'Email', label: 'Email' },
@@ -105,7 +116,7 @@ export default function LeadsPage() {
       key: 'actions',
       label: '',
       render: (row: any) => isAdmin ? (
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
           <button 
             onClick={() => setEditingRecord(row)}
             className="text-gray-400 hover:text-brand-red transition-colors p-1"
@@ -142,10 +153,23 @@ export default function LeadsPage() {
           columns={columns} 
           searchPlaceholder="Search by Company..." 
           searchKey="Company" 
+          onRowClick={(row) => setSelectedLead(row)}
+          onEdit={isAdmin ? (row) => setEditingRecord(row) : undefined}
+          onDelete={isAdmin ? (row) => handleDelete(row.id) : undefined}
         />
       </div>
       <CreateLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
+      {/* Side Panel for viewing Lead profile */}
+      <LeadSidePanel
+        lead={selectedLead}
+        isOpen={!!selectedLead}
+        onClose={() => setSelectedLead(null)}
+        onEdit={(l) => setEditingRecord(l)}
+        onDelete={(id) => handleDelete(id)}
+      />
+
+      {/* Edit Modal */}
       {editingRecord && (
         <EditModal
           isOpen={true}
