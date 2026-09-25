@@ -124,13 +124,17 @@ export async function fetchContact(id: string) {
 export async function fetchAccounts() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
-  
+
   const fields = 'Account_Name,Industry,Website,Phone';
-  const response = await fetch(`${domain}/crm/v6/Accounts?fields=${fields}`, {
-    method: 'GET',
-    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
-    cache: 'no-store'
-  });
+  // Exclude vendor-type accounts — vendors are managed on the Vendors page
+  const response = await fetch(
+    `${domain}/crm/v6/Accounts/search?criteria=(Account_Type:not_equal:Vendor)&fields=${fields}&per_page=200`,
+    {
+      method: 'GET',
+      headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+      cache: 'no-store'
+    }
+  );
 
   if (response.status === 204) return [];
   if (!response.ok) throw new Error('Failed to fetch accounts from Zoho');
