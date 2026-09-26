@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail, Plus } from 'lucide-react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import VendorEditPanel from './components/VendorEditPanel';
 import SwipeableCard from '../../components/SwipeableCard';
@@ -92,8 +93,30 @@ const getStatusBadge = (status: string) => {
 
 export default function VendorsPage() {
   const { registerCallClick } = useCallLogger();
-  const { orgRole } = useAuth();
+    const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/accounts/' + id, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete vendor');
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success('Vendor deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete vendor');
+    }
+  });
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this vendor?')) {
+      deleteMutation.mutate(id);
+    }
+  };
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [tradeFilter, setTradeFilter] = useState('');
@@ -331,16 +354,30 @@ export default function VendorsPage() {
                           <span className="line-clamp-2">{vendor.Description || '—'}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingVendor(vendor);
-                            }}
-                            className="p-1 text-gray-400 hover:text-brand-red transition-colors"
-                            title="Edit vendor"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex justify-end pr-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingVendor(vendor);
+                              }}
+                              className="p-1 text-gray-400 hover:text-brand-red transition-colors"
+                              title="Edit vendor"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(vendor.id);
+                                }}
+                                className="p-1 text-gray-400 hover:text-red-600 transition-colors ml-2"
+                                title="Delete vendor"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -365,6 +402,7 @@ export default function VendorsPage() {
                   <SwipeableCard
                     key={vendor.id || idx}
                     onEdit={() => setEditingVendor(vendor)}
+                    onDelete={isAdmin ? () => handleDelete(vendor.id) : undefined}
                     onClick={() => setEditingVendor(vendor)}
                   >
                     <div className="p-4 flex flex-col gap-2">
@@ -439,6 +477,8 @@ export default function VendorsPage() {
     </div>
   );
 }
+
+
 
 
 

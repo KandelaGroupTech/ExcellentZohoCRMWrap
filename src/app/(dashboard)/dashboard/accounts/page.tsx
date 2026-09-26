@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Edit2, Plus } from 'lucide-react';
+import { Loader2, Edit2, Plus, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import DataTable from '../../components/DataTable';
 import AccountSlideOver from './components/AccountSlideOver';
 import EditModal from '../../components/EditModal';
@@ -16,8 +17,30 @@ export default function AccountsPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [selectedAccountName, setSelectedAccountName] = useState('');
   
-  const [editingRecord, setEditingRecord] = useState<any | null>(null);
+    const [editingRecord, setEditingRecord] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/accounts/' + id, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete account');
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success('Account deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      setSelectedAccountId(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete account');
+    }
+  });
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this account?')) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const { data: accounts, isLoading, error } = useQuery({
     queryKey: ['accounts'],
@@ -139,3 +162,4 @@ export default function AccountsPage() {
     </div>
   );
 }
+

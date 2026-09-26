@@ -572,3 +572,7 @@ export async function createNote(data: { Parent_Id: string, Note_Content: string
   throw new Error(`Zoho error: ${zohoError}`);
 }
 
+
+export async function deleteAccount(id: string) {
+  return deleteRecord('Accounts', id);
+}
