@@ -25,46 +25,63 @@ export async function POST(req: Request, { params }: { params: { dealId: string 
     const file = formData.get('file') as File;
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
-    // Log what we received
-    console.log('[ATTACH] file.name:', file.name, 'file.size:', file.size, 'file.type:', file.type);
+    console.log('[ATTACH] name:', file.name, 'size:', file.size, 'type:', file.type);
 
     const token = await getAccessToken();
-    const domain = 'https://www.zohoapis.com';
 
-    // Build a fresh FormData manually using raw buffer → Blob
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const blob = new Blob([buffer], { type: file.type || 'application/octet-stream' });
+    // Build a raw multipart/form-data body using Buffers.
+    // This is the most reliable approach in Node.js — it ensures the
+    // Content-Disposition header always has the correct filename parameter,
+    // which the Web FormData API sometimes drops in server environments.
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const boundary = '----ZohoCRMBoundary' + Date.now().toString(16);
+    const filename = file.name.replace(/[^\w.\-]/g, '_'); // sanitize
+    const mimeType = file.type || 'application/octet-stream';
 
-    const uploadForm = new FormData();
-    uploadForm.append('file', blob, file.name);
+    const header = Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="file"; filename="${filename}"\r\n` +
+      `Content-Type: ${mimeType}\r\n` +
+      `\r\n`
+    );
+    const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const body = Buffer.concat([header, fileBuffer, footer]);
 
-    const zohoRes = await fetch(`${domain}/crm/v6/Deals/${params.dealId}/Attachments`, {
+    console.log('[ATTACH] multipart body size:', body.length, 'boundary:', boundary);
+
+    const zohoRes = await fetch(`https://www.zohoapis.com/crm/v6/Deals/${params.dealId}/Attachments`, {
       method: 'POST',
       headers: {
         'Authorization': `Zoho-oauthtoken ${token}`,
-        // Do NOT set Content-Type — fetch sets it with the multipart boundary automatically
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': body.length.toString(),
       },
-      body: uploadForm,
+      body: body,
     });
 
     const responseText = await zohoRes.text();
-    console.log('[ATTACH] Zoho status:', zohoRes.status, 'body:', responseText);
+    console.log('[ATTACH] Zoho status:', zohoRes.status, 'response:', responseText);
 
     if (!zohoRes.ok) {
-      return NextResponse.json({ error: `Zoho rejected upload: ${responseText}` }, { status: zohoRes.status });
+      return NextResponse.json(
+        { error: `Zoho rejected upload (${zohoRes.status}): ${responseText}` },
+        { status: zohoRes.status }
+      );
     }
 
     let parsed: any;
     try { parsed = JSON.parse(responseText); } catch { parsed = { raw: responseText }; }
 
-    // Zoho returns 200 but hides errors inside the payload
+    // Zoho returns HTTP 200 even for failures — check the inner status
     if (parsed?.data?.[0]?.status === 'error') {
-      return NextResponse.json({ error: parsed.data[0].message || 'Zoho upload failed' }, { status: 400 });
+      const msg = parsed.data[0].message || 'Zoho upload failed';
+      console.error('[ATTACH] Zoho inner error:', msg);
+      return NextResponse.json({ error: msg }, { status: 400 });
     }
 
     return NextResponse.json(parsed);
   } catch (error: any) {
-    console.error('[ATTACH] Error:', error);
+    console.error('[ATTACH] Caught error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
