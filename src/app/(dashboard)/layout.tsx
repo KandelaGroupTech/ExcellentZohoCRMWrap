@@ -71,9 +71,6 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <header className="bg-brand-black border-b border-gray-800 h-16 shrink-0 flex items-center px-4 md:px-8 shadow-sm">
-          <div className="md:hidden flex items-center mr-3">
-            <UserButton afterSignOutUrl="/" />
-          </div>
           <h1 className="text-xl font-semibold text-white truncate">Dashboard</h1>
           <div className="ml-auto">
             <HeaderActions />
@@ -93,7 +90,7 @@ export default function DashboardLayout({
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+                className={`flex flex-col items-center justify-center flex-1 h-full space-y-1 ${
                   isActive ? 'text-brand-red' : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -102,7 +99,20 @@ export default function DashboardLayout({
               </Link>
             );
           })}
+          {/* Account / Sign Out tab */}
+          <div className="flex flex-col items-center justify-center flex-1 h-full space-y-1 text-gray-400">
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "h-6 w-6",
+                }
+              }}
+            />
+            <span className="text-[10px] font-medium leading-none">Account</span>
+          </div>
         </div>
+
         </div>
       </div>
     </CallLoggerProvider>
