@@ -595,16 +595,16 @@ export async function fetchDealsForContact(contactId: string) {
 export async function uploadDealAttachment(dealId: string, formData: FormData) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
-  const res = await fetch(\/crm/v6/Deals/\/Attachments, {
+  const res = await fetch(`${domain}/crm/v6/Deals/${dealId}/Attachments`, {
     method: 'POST',
     headers: {
-      'Authorization': Zoho-oauthtoken \
+      'Authorization': `Zoho-oauthtoken ${token}`
     },
     body: formData
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(Failed to upload attachment: \);
+    throw new Error(`Failed to upload attachment: ${text}`);
   }
   return res.json();
 }
@@ -612,8 +612,8 @@ export async function uploadDealAttachment(dealId: string, formData: FormData) {
 export async function getDealAttachments(dealId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
-  const res = await fetch(\/crm/v6/Deals/\/Attachments, {
-    headers: { 'Authorization': Zoho-oauthtoken \ }
+  const res = await fetch(`${domain}/crm/v6/Deals/${dealId}/Attachments`, {
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` }
   });
   // Return empty array if not found or no attachments
   if (!res.ok) {
@@ -625,9 +625,9 @@ export async function getDealAttachments(dealId: string) {
 export async function deleteDealAttachment(dealId: string, attachmentId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
-  const res = await fetch(\/crm/v6/Deals/\/Attachments/\, {
+  const res = await fetch(`${domain}/crm/v6/Deals/${dealId}/Attachments/${attachmentId}`, {
     method: 'DELETE',
-    headers: { 'Authorization': Zoho-oauthtoken \ }
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` }
   });
   if (!res.ok) throw new Error('Failed to delete attachment');
   return res.json();
@@ -636,8 +636,8 @@ export async function deleteDealAttachment(dealId: string, attachmentId: string)
 export async function downloadDealAttachment(dealId: string, attachmentId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
-  const res = await fetch(\/crm/v6/Deals/\/Attachments/\, {
-    headers: { 'Authorization': Zoho-oauthtoken \ }
+  const res = await fetch(`${domain}/crm/v6/Deals/${dealId}/Attachments/${attachmentId}`, {
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` }
   });
   if (!res.ok) throw new Error('Failed to download attachment');
   return res;
