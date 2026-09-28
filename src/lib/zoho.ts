@@ -402,7 +402,7 @@ export async function deleteDeal(id: string) {
   return deleteRecord('Deals', id);
 }
 
-export async function updateDeal(id: string, data: Partial<{ Deal_Name: string, Amount: number, Stage: string, Closing_Date: string, Description: string }>) {
+export async function updateDeal(id: string, data: Partial<{ Deal_Name: string, Amount: number, Stage: string, Closing_Date: string, Description: string, Account_Name: any }>) {
   return updateRecord('Deals', id, data);
 }
 

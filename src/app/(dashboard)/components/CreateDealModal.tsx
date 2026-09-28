@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import Modal from './Modal';
 
@@ -9,9 +9,20 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     Deal_Name: defaultName || '',
+    Account_Name: '',
     Amount: '',
     Stage: 'Qualification',
     Closing_Date: new Date().toISOString().split('T')[0]
+  });
+
+  const { data: accounts } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/accounts');
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: isOpen && !accountId
   });
 
   const createMutation = useMutation({
@@ -20,7 +31,16 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
         ...data,
         Amount: parseFloat(data.Amount) || 0
       };
-      if (accountId) payload.Account_Name = accountId;
+      if (accountId) {
+        payload.Account_Name = accountId;
+      } else if (data.Account_Name.trim()) {
+        const matchingAccount = accounts?.find((a: any) => a.Account_Name === data.Account_Name.trim());
+        if (matchingAccount) {
+          payload.Account_Name = matchingAccount.id;
+        } else {
+          payload.Account_Name = data.Account_Name.trim();
+        }
+      }
       if (contactId) payload.Contact_Name = contactId;
       
       const res = await fetch('/website-demos/excellentzohocrm/api/deals', {
@@ -41,6 +61,7 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
       onClose();
       setFormData({
         Deal_Name: defaultName || '',
+        Account_Name: '',
         Amount: '',
         Stage: 'Qualification',
         Closing_Date: new Date().toISOString().split('T')[0]
@@ -64,6 +85,25 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
           <label className="block text-sm font-medium text-gray-700">Deal Name</label>
           <input required type="text" value={formData.Deal_Name} onChange={e => setFormData({...formData, Deal_Name: e.target.value})} className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" />
         </div>
+
+        {!accountId && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Account (Optional)</label>
+            <input 
+              type="text" 
+              list="accounts-list"
+              value={formData.Account_Name} 
+              onChange={e => setFormData({...formData, Account_Name: e.target.value})} 
+              placeholder="Select or type a new account..."
+              className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" 
+            />
+            <datalist id="accounts-list">
+              {accounts?.map((acc: any) => (
+                <option key={acc.id} value={acc.Account_Name} />
+              ))}
+            </datalist>
+          </div>
+        )}
         
         <div className="grid grid-cols-2 gap-4">
           <div>
