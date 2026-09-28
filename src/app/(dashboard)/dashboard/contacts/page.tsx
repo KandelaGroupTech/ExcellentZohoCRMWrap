@@ -129,8 +129,8 @@ export default function ContactsPage() {
 
   processedContacts.sort((a, b) => {
     if (sortBy === 'name') {
-      const nameA = ${a.First_Name || ''} .trim().toLowerCase();
-      const nameB = ${b.First_Name || ''} .trim().toLowerCase();
+      const nameA = `${a.First_Name || ''} ${a.Last_Name || ''}`.trim().toLowerCase();
+      const nameB = `${b.First_Name || ''} ${b.Last_Name || ''}`.trim().toLowerCase();
       return sortDir === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
     } else {
       const accA = (typeof a.Account_Name === 'object' ? a.Account_Name?.name : a.Account_Name)?.toLowerCase() || '';
