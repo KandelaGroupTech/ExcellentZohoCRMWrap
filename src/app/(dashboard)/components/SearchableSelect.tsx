@@ -53,7 +53,7 @@ export default function SearchableSelect({
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
               <input 
                 type="text" 
-                className="w-full pl-8 pr-3 py-1.5 text-sm border-gray-300 rounded-md focus:ring-brand-red focus:border-brand-red border"
+                className="w-full pl-8 pr-3 py-1.5 text-sm border-gray-300 rounded-md focus:ring-brand-red focus:border-brand-red border bg-white text-gray-900"
                 placeholder={searchPlaceholder}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -94,3 +94,4 @@ export default function SearchableSelect({
     </div>
   );
 }
+

@@ -361,7 +361,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                 value={newTaskSubject}
                 onChange={(e) => setNewTaskSubject(e.target.value)}
                 placeholder="Add a new follow-up..." 
-                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red"
+                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
               />
               <button 
                 type="submit" 
@@ -419,7 +419,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                   onChange={(e) => setNewNoteContent(e.target.value)}
                   placeholder="Add a new note..."
                   rows={2}
-                  className="block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red resize-none"
+                  className="block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red resize-none bg-white text-gray-900"
                 />
                 <button 
                   type="submit" 
@@ -450,3 +450,5 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
 
   );
 }
+
+

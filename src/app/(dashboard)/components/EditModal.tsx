@@ -80,7 +80,7 @@ export default function EditModal({ isOpen, onClose, title, fields, initialData,
                   }
                   setFormData(prev => ({ ...prev, [field.key]: value }));
                 }}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-red focus:outline-none focus:ring-1 focus:ring-brand-red bg-white text-gray-900"
               />
             </div>
           ))}
@@ -106,3 +106,4 @@ export default function EditModal({ isOpen, onClose, title, fields, initialData,
     </div>
   );
 }
+

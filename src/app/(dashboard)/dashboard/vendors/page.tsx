@@ -42,7 +42,7 @@ function MultiSelectDropdown({
   return (
     <div className="relative w-full" ref={containerRef}>
       <div 
-        className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white cursor-pointer flex items-center justify-between"
+        className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 cursor-pointer flex items-center justify-between"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="truncate mr-2 text-gray-700 select-none">
@@ -228,7 +228,7 @@ export default function VendorsPage() {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-red focus:border-brand-red sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-red focus:border-brand-red sm:text-sm"
               placeholder="Search by Vendor Name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -248,7 +248,7 @@ export default function VendorsPage() {
             <select
               value={tradeFilter}
               onChange={(e) => setTradeFilter(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-brand-red focus:border-brand-red"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-brand-red focus:border-brand-red"
             >
               <option value="">All Trades</option>
               {tradeOptions.map((trade) => (
@@ -477,6 +477,7 @@ export default function VendorsPage() {
     </div>
   );
 }
+
 
 
 

@@ -127,7 +127,7 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
                 type="text" 
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red"
+                className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
                 placeholder="What was discussed?"
                 autoFocus
               />
@@ -167,6 +167,7 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
     </CallLoggerContext.Provider>
   );
 }
+
 
 
 

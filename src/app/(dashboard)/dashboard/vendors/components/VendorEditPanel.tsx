@@ -108,7 +108,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   };
 
   const cityState = [vendor?.Billing_City, vendor?.Billing_State].filter(Boolean).join(', ');
-  const inputClass = "block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-brand-red focus:border-brand-red disabled:bg-gray-50 disabled:text-gray-400 bg-white";
+  const inputClass = "block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-brand-red focus:border-brand-red disabled:bg-gray-50 disabled:text-gray-400 bg-white text-gray-900";
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -338,6 +338,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
     document.body
   );
 }
+
 
 
 

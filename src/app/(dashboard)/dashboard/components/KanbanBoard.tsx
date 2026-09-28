@@ -255,7 +255,7 @@ export default function KanbanBoard() {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-red focus:border-brand-red sm:text-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-red focus:border-brand-red sm:text-sm"
             placeholder="Search deals by name or account..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -463,6 +463,7 @@ export default function KanbanBoard() {
     </div>
   );
 }
+
 
 
 

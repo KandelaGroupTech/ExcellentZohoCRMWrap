@@ -83,7 +83,7 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
             value={selectedContactId}
             onChange={(e) => setSelectedContactId(e.target.value)}
             disabled={isLoadingContacts || createMutation.isPending}
-            className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white disabled:bg-gray-100"
+            className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white disabled:bg-gray-100 text-gray-900"
           >
             <option value="">-- Choose a Contact --</option>
             {contacts.map((c: any) => {
@@ -105,7 +105,7 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
             type="text" 
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white"
+            className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
             placeholder="What was discussed?"
             disabled={createMutation.isPending}
           />
@@ -143,3 +143,4 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
     </div>
   );
 }
+
