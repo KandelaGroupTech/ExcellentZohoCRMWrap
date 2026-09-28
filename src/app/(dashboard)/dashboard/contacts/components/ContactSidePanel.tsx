@@ -1,4 +1,4 @@
-import { X, Edit2, Trash2, Mail, Phone, Building2, User, UserPlus, Clock, MessageSquare, Handshake, Share2, Loader2, Calendar } from 'lucide-react';
+import { X, Edit2, Trash2, Mail, Phone, Building2, User, UserPlus, Clock, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
 import { useState, useEffect } from 'react';
@@ -35,19 +35,19 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
   if ((!contact && !isOpen) || !mounted) return null;
 
-  const fullName = \\ \\.trim() || 'Unnamed Contact';
+  const fullName = `${contact?.First_Name || ''} ${contact?.Last_Name || ''}`.trim() || 'Unnamed Contact';
   const accountName = typeof contact?.Account_Name === 'object' ? contact?.Account_Name?.name : contact?.Account_Name;
 
   const lastConnection = parseLastConnection(contact?.Skype_ID);
 
   const handleSaveToPhone = () => {
     if (!contact) return;
-    const vcard = \BEGIN:VCARD\r\nVERSION:3.0\r\nN:\;\;;;\r\nFN:\\r\nORG:\\r\nTITLE:\\r\nTEL;TYPE=WORK,VOICE:\\r\nEMAIL;TYPE=PREF,INTERNET:\\r\nEND:VCARD\;
+    const vcard = `BEGIN:VCARD\r\nVERSION:3.0\r\nN:${contact.Last_Name || ''};${contact.First_Name || ''};;;\r\nFN:${fullName}\r\nORG:${accountName || ''}\r\nTITLE:${contact.Title || ''}\r\nTEL;TYPE=WORK,VOICE:${contact.Phone || ''}\r\nEMAIL;TYPE=PREF,INTERNET:${contact.Email || ''}\r\nEND:VCARD`;
     const blob = new Blob([vcard], { type: 'text/vcard' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = \\.vcf\;
+    link.download = `${fullName.replace(/\s+/g, '_')}.vcf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -56,8 +56,8 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
   const logTouchMutation = useMutation({
     mutationFn: async () => {
-      const payload = { Skype_ID: \\ | \\ };
-      const res = await fetch(\/website-demos/excellentzohocrm/api/contacts/\\, {
+      const payload = { Skype_ID: `${touchType} | ${touchDate}` };
+      const res = await fetch(`/website-demos/excellentzohocrm/api/contacts/${contact.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -69,8 +69,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
       toast.success('Interaction logged!');
       setIsLoggingTouch(false);
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
-      // update local state so UI updates immediately
-      if (contact) contact.Skype_ID = \\ | \\;
+      if (contact) contact.Skype_ID = `${touchType} | ${touchDate}`;
     },
     onError: () => toast.error('Failed to save log.')
   });
@@ -90,7 +89,9 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
       )}
 
       <div 
-        className={\ixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50 shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out \\}
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50 shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
       >
         <div className="flex flex-col px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -164,11 +165,11 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
                     onChange={e => setTouchType(e.target.value)}
                     className="w-full text-sm border-gray-300 rounded-md p-2 bg-white text-gray-900 focus:ring-brand-red focus:border-brand-red border"
                   >
-                    <option value="Phone">?? Phone Call</option>
-                    <option value="Email">?? Email</option>
-                    <option value="Text">?? Text Message</option>
-                    <option value="Meeting">?? In-Person Meeting</option>
-                    <option value="Social">?? Social Media</option>
+                    <option value="Phone">📞 Phone Call</option>
+                    <option value="Email">✉️ Email</option>
+                    <option value="Text">💬 Text Message</option>
+                    <option value="Meeting">🤝 In-Person Meeting</option>
+                    <option value="Social">🔗 Social Media</option>
                   </select>
                 </div>
                 <div>
@@ -192,7 +193,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
             <button 
               onClick={handleSaveToPhone}
-              className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group text-left w-full"
+              className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group text-left w-full bg-white shadow-sm"
             >
               <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3 shrink-0">
                 <UserPlus className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
@@ -204,9 +205,9 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
             </button>
             {contact?.Phone && (
               <a 
-                href={\	el:\\}
+                href={`tel:${contact.Phone}`}
                 onClick={() => registerCallClick({ entityId: contact.id, entityType: 'Contacts', name: fullName })}
-                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
+                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group bg-white shadow-sm"
               >
                 <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3">
                   <Phone className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
@@ -220,8 +221,8 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
             {contact?.Email && (
               <a 
-                href={\mailto:\\}
-                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
+                href={`mailto:${contact.Email}`}
+                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group bg-white shadow-sm"
               >
                 <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3">
                   <Mail className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
@@ -238,14 +239,14 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
               Contact Details
             </h3>
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 space-y-4">
+            <div className="bg-white rounded-lg p-4 border border-gray-100 space-y-4 shadow-sm">
               <div>
                 <label className="block text-xs text-gray-500 mb-1 flex items-center gap-1.5">
                   <Building2 className="h-3 w-3" />
                   Account / Company
                 </label>
                 <p className="text-sm font-medium text-gray-900">
-                  {accountName || '�'}
+                  {accountName || '—'}
                 </p>
               </div>
 
@@ -255,7 +256,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
                   Title
                 </label>
                 <p className="text-sm font-medium text-gray-900">
-                  {contact?.Title || '�'}
+                  {contact?.Title || '—'}
                 </p>
               </div>
             </div>

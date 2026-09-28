@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         await createNote({
           Parent_Id: parentId,
           se_module: seModule,
-          Note_Title: \Call Notes: \\,
+          Note_Title: `Call Notes: ${data.Call_Result || 'Outbound'}`,
           Note_Content: data.Description.trim()
         });
       } catch (noteErr) {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         
         if (parentId) {
           const dateStr = new Date().toISOString().split('T')[0];
-          await updateContact(parentId, { Skype_ID: \Phone | \\ });
+          await updateContact(parentId, { Skype_ID: `Phone | ${dateStr}` });
         }
       } catch (e) {
         console.error("Failed to update last touched date:", e);
