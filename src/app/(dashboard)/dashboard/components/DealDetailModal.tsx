@@ -56,7 +56,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const { data: attachmentsData, isLoading: isLoadingAttachments } = useQuery({
+  const { data: attachmentsData, isLoading: isLoadingAttachments, isError: isErrorAttachments, error: errorAttachments } = useQuery({
     queryKey: ['attachments', deal?.id],
     queryFn: async () => {
       if (!deal?.id) return { data: [] };
@@ -612,6 +612,10 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
             {isLoadingAttachments ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+              </div>
+            ) : isErrorAttachments ? (
+              <div className="p-4 text-sm text-red-600 bg-red-50 rounded-md mb-4 border border-red-200">
+                Failed to load attachments: {errorAttachments?.message || 'Unknown error'}
               </div>
             ) : (
               <div className="space-y-2 mb-6">
