@@ -341,7 +341,7 @@ export default function VendorsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {vendor.Phone ? (
                             <a
-                              href={`tel:`}
+                              href={`tel:${vendor.Phone.replace(/\D/g, '')}`}
                               className="text-brand-red hover:underline"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -421,7 +421,7 @@ export default function VendorsPage() {
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500">Main Phone</span>
                             <a 
-                              href={`tel:`} 
+                              href={`tel:${vendor.Phone.replace(/\D/g, '')}`} 
                               className="text-brand-red font-medium" 
                               onClick={e => {
                                 e.stopPropagation();

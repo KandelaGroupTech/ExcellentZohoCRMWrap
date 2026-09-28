@@ -281,7 +281,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
             {contact?.Phone && (
               <a
-                href={`tel:`}
+                href={`tel:${contact.Phone.replace(/\D/g, '')}`}
                 onClick={() => registerCallClick({ entityId: contact.id, entityType: 'Contacts', name: fullName })}
                 className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >

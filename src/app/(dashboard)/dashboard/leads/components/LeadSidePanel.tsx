@@ -91,7 +91,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
           <div className="flex flex-col gap-3">
             {lead?.Phone && (
               <a 
-                href={`tel:`}
+                href={`tel:${lead.Phone.replace(/\D/g, '')}`}
                 onClick={() => registerCallClick({ entityId: lead.id, entityType: 'Leads', name: fullName })}
                 className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >
