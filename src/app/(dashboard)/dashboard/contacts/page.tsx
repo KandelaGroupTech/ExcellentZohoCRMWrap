@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Loader2, Plus, Trash2, Edit2, ArrowUp, ArrowDown } from 'lucide-react';
-import { parseLastConnection, formatPhoneNumber } from '@/lib/utils';
+import { Loader2, Plus, Trash2, Edit2, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
+import { parseLastConnection, formatPhoneNumber, getConnectionStatusInfo } from '@/lib/utils';
 import { useAuth } from '@clerk/nextjs';
 import DataTable from '../../components/DataTable';
 import CreateContactModal from '../../components/CreateContactModal';
@@ -140,33 +140,58 @@ export default function ContactsPage() {
   });
 
   const columns = [
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row: any) => {
+        const conn = parseLastConnection(row.Skype_ID);
+        const status = getConnectionStatusInfo(conn?.date);
+        return (
+          <div className="flex justify-center items-center h-full pt-1">
+            <div className={`w-3.5 h-3.5 rounded-full ${status.colorClass}`} title={status.text} />
+          </div>
+        );
+      }
+    },
     { 
       key: 'First_Name', 
       label: 'Name',
-      render: (row: any) => (
-        <span className="font-medium text-brand-red hover:underline cursor-pointer">
-          {`${row.First_Name || ''} ${row.Last_Name || ''}`.trim() || '-'}
-        </span>
-      )
+      render: (row: any) => {
+        const conn = parseLastConnection(row.Skype_ID);
+        const status = getConnectionStatusInfo(conn?.date);
+        return (
+          <span className="font-medium text-brand-red hover:underline cursor-pointer inline-flex items-center">
+            {status.isRed && <AlertTriangle className="h-4 w-4 text-red-600 mr-1.5 flex-shrink-0" />}
+            {`${row.First_Name || ''} ${row.Last_Name || ''}`.trim() || '-'}
+          </span>
+        );
+      }
     },
-    { key: 'Account_Name', label: 'Account' },
-    { key: 'Email', label: 'Email' },
-    { key: 'Phone', label: 'Phone', render: (row: any) => formatPhoneNumber(row.Phone) },
-      { 
-        key: 'Skype_ID', 
-        label: 'Last Connection',
-        render: (row: any) => {
-          const conn = parseLastConnection(row.Skype_ID);
-          if (!conn) return <span className="text-gray-400">-</span>;
-          return (
-            <span className="inline-flex items-center gap-1 text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full text-xs whitespace-nowrap">
-              <span>{conn.icon}</span>
-              <span>{conn.date}</span>
+    { key: 'Account_Name', label: 'Accounts' },
+    { key: 'Email', label: 'Emails' },
+    { key: 'Phone', label: 'Phones', render: (row: any) => formatPhoneNumber(row.Phone) },
+    { key: 'Title', label: 'Titles' },
+    { 
+      key: 'Skype_ID', 
+      label: 'Last Connection',
+      render: (row: any) => {
+        const conn = parseLastConnection(row.Skype_ID);
+        const status = getConnectionStatusInfo(conn?.date);
+        return (
+          <div className="flex items-center gap-2">
+            {conn ? (
+              <span className="inline-flex items-center gap-1 text-gray-700 bg-gray-200 border border-gray-300 px-2 py-0.5 rounded-full text-xs whitespace-nowrap shadow-sm">
+                <span>{conn.icon}</span>
+                <span>{conn.date}</span>
+              </span>
+            ) : null}
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs whitespace-nowrap font-medium ${status.pillClass}`}>
+              {status.text}
             </span>
-          );
-        }
-      },
-    { key: 'Title', label: 'Title' },
+          </div>
+        );
+      }
+    },
     {
       key: 'actions',
       label: '',
@@ -247,6 +272,9 @@ export default function ContactsPage() {
           onEdit={isAdmin ? (row) => setEditingRecord(row) : undefined}
           onDelete={isAdmin ? (row) => handleDelete(row.id) : undefined}
         />
+      </div>
+      <div className="mt-2 text-[11px] text-gray-500 font-medium bg-gray-50 px-4 py-2 rounded-md border border-gray-200">
+        STATUS: Green=&lt;30 days, Amber=31-60 days, Red=61+ days; PILLS: Green=Recent, Amber=Approach, Red=Neglected
       </div>
       <CreateContactModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       

@@ -31,3 +31,39 @@ export function parseLastConnection(skypeId?: any) {
   if (type.toLowerCase().includes('social')) icon = '\uD83D\uDD17';
   return { type, date, icon };
 }
+
+export function getConnectionStatusInfo(dateString?: string | null) {
+  if (!dateString) {
+    return { colorClass: 'bg-red-500', pillClass: 'bg-red-500 text-white', text: 'Never', isRed: true };
+  }
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) {
+    return { colorClass: 'bg-red-500', pillClass: 'bg-red-500 text-white', text: 'Never', isRed: true };
+  }
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+  
+  let text = '';
+  if (diffDays < 0) text = 'In the future';
+  else if (diffDays === 0) text = 'Today';
+  else if (diffDays === 1) text = '1 day ago';
+  else if (diffDays < 30) text = diffDays + ' days ago';
+  else {
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths === 1) text = '1 mo ago';
+    else if (diffMonths < 12) text = diffMonths + ' mos ago';
+    else {
+      const diffYears = Math.floor(diffDays / 365);
+      if (diffYears === 1) text = '1 yr ago';
+      else text = diffYears + ' yrs ago';
+    }
+  }
+
+  if (diffDays > 60) {
+    return { colorClass: 'bg-red-500', pillClass: 'bg-red-500 text-white', text, isRed: true };
+  } else if (diffDays > 30) {
+    return { colorClass: 'bg-amber-500', pillClass: 'bg-amber-400 text-amber-900', text, isRed: false };
+  } else {
+    return { colorClass: 'bg-green-500', pillClass: 'bg-green-200 text-green-900', text, isRed: false };
+  }
+}
