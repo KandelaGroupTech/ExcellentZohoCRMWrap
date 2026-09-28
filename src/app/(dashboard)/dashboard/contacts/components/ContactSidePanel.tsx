@@ -3,7 +3,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { parseLastConnection } from '../../../lib/utils';
+import { parseLastConnection } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 

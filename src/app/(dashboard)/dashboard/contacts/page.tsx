@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Loader2, Plus, Trash2, Edit2 } from 'lucide-react';
+import { parseLastConnection } from '@/lib/utils';
 import { useAuth } from '@clerk/nextjs';
 import DataTable from '../../components/DataTable';
 import CreateContactModal from '../../components/CreateContactModal';
@@ -208,6 +209,7 @@ export default function ContactsPage() {
     </div>
   );
 }
+
 
 
 
