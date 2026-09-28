@@ -17,8 +17,8 @@ export const formatPhoneNumber = (value: string) => {
   return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
 };
 
-export function parseLastConnection(skypeId?: string) {
-  if (!skypeId) return null;
+export function parseLastConnection(skypeId?: any) {
+  if (!skypeId || typeof skypeId !== 'string') return null;
   const parts = skypeId.split('|').map(s => s.trim());
   if (parts.length < 2) return { type: 'Unknown', date: skypeId, icon: '\uD83D\uDCC5' };
   const type = parts[0];

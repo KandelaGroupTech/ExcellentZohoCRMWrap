@@ -6,8 +6,8 @@ import { createPortal } from 'react-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-function parseLastTouch(skypeId?: string) {
-  if (!skypeId) return null;
+function parseLastTouch(skypeId?: any) {
+  if (!skypeId || typeof skypeId !== 'string') return null;
   const parts = skypeId.split('|').map(s => s.trim());
   if (parts.length < 2) return { type: 'Unknown', date: skypeId, icon: '\uD83D\uDCC5' };
   const type = parts[0];
