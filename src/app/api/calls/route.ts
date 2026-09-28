@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { createCall, createNote } from '@/lib/zoho';
+import { createCall, createNote, updateContact } from '@/lib/zoho';
 
 export async function POST(req: Request) {
   const { userId, orgRole } = auth();
@@ -39,11 +39,26 @@ export async function POST(req: Request) {
         await createNote({
           Parent_Id: parentId,
           se_module: seModule,
-          Note_Title: `Call Notes: ${data.Call_Result || 'Outbound'}`,
+          Note_Title: \Call Notes: \\,
           Note_Content: data.Description.trim()
         });
       } catch (noteErr) {
         console.error("Failed to create note for call:", noteErr);
+      }
+    }
+
+    if (entityType === 'Contacts') {
+      try {
+        let parentId = null;
+        if (data.Who_Id?.id) parentId = data.Who_Id.id;
+        else if (data.What_Id?.id) parentId = data.What_Id.id;
+        
+        if (parentId) {
+          const dateStr = new Date().toISOString().split('T')[0];
+          await updateContact(parentId, { Skype_ID: \Phone | \\ });
+        }
+      } catch (e) {
+        console.error("Failed to update last touched date:", e);
       }
     }
 

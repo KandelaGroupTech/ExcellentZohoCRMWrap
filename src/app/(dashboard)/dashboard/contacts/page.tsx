@@ -111,7 +111,22 @@ export default function ContactsPage() {
     { key: 'Account_Name', label: 'Account' },
     { key: 'Email', label: 'Email' },
     { key: 'Phone', label: 'Phone' },
+      { 
+        key: 'Skype_ID', 
+        label: 'Last Connection',
+        render: (row: any) => {
+          const conn = parseLastConnection(row.Skype_ID);
+          if (!conn) return <span className="text-gray-400">-</span>;
+          return (
+            <span className="inline-flex items-center gap-1 text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full text-xs whitespace-nowrap">
+              <span>{conn.icon}</span>
+              <span>{conn.date}</span>
+            </span>
+          );
+        }
+      },
     { key: 'Title', label: 'Title' },
+            { key: 'Skype_ID', label: 'Last Connection (e.g. Phone | 2026-10-14)' },
     {
       key: 'actions',
       label: '',
@@ -181,6 +196,7 @@ export default function ContactsPage() {
             { key: 'Email', label: 'Email', type: 'email' },
             { key: 'Phone', label: 'Phone', type: 'tel' },
             { key: 'Title', label: 'Title' },
+            { key: 'Skype_ID', label: 'Last Connection (e.g. Phone | 2026-10-14)' },
           ]}
           initialData={editingRecord}
           onSave={async (data) => {
@@ -192,3 +208,6 @@ export default function ContactsPage() {
     </div>
   );
 }
+
+
+
