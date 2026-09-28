@@ -30,11 +30,23 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const [editAmountValue, setEditAmountValue] = useState('');
   const [editingAccount, setEditingAccount] = useState(false);
   const [editAccountValue, setEditAccountValue] = useState('');
+  const [editingContact, setEditingContact] = useState(false);
+  const [editContactValue, setEditContactValue] = useState('');
 
   const { data: accounts } = useQuery({
     queryKey: ['accounts'],
     queryFn: async () => {
       const res = await fetch('/website-demos/excellentzohocrm/api/accounts');
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: isOpen && !!deal
+  });
+
+  const { data: contacts } = useQuery({
+    queryKey: ['contacts'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts');
       if (!res.ok) return [];
       return res.json();
     },
@@ -126,6 +138,40 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     if (confirm('Are you sure you want to delete this deal?')) {
       deleteMutation.mutate();
     }
+  };
+
+  const updateContactMutation = useMutation({
+    mutationFn: async (contactIdentifier: string) => {
+      let finalContactValue = contactIdentifier;
+      const matchingContact = contacts?.find((c: any) => `${c.First_Name || ''} ${c.Last_Name || ''}`.trim() === contactIdentifier);
+      if (matchingContact) {
+        finalContactValue = matchingContact.id;
+      }
+      
+      const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Contact_Name: finalContactValue })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update contact');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      setEditingContact(false);
+      toast.success('Contact updated');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to update contact');
+    }
+  });
+
+  const handleContactSave = () => {
+    if (!editContactValue.trim()) return;
+    updateContactMutation.mutate(editContactValue.trim());
   };
 
   const updateAccountMutation = useMutation({

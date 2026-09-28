@@ -10,6 +10,7 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
   const [formData, setFormData] = useState({
     Deal_Name: defaultName || '',
     Account_Name: '',
+    Contact_Name: '',
     Amount: '',
     Stage: 'Qualification',
     Closing_Date: new Date().toISOString().split('T')[0]
@@ -23,6 +24,16 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
       return res.json();
     },
     enabled: isOpen && !accountId
+  });
+
+  const { data: contacts } = useQuery({
+    queryKey: ['contacts'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts');
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: isOpen && !contactId
   });
 
   const createMutation = useMutation({
@@ -41,7 +52,16 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
           payload.Account_Name = data.Account_Name.trim();
         }
       }
-      if (contactId) payload.Contact_Name = contactId;
+      if (contactId) {
+        payload.Contact_Name = contactId;
+      } else if (data.Contact_Name.trim()) {
+        const matchingContact = contacts?.find((c: any) => `${c.First_Name || ''} ${c.Last_Name || ''}`.trim() === data.Contact_Name.trim());
+        if (matchingContact) {
+          payload.Contact_Name = matchingContact.id;
+        } else {
+          payload.Contact_Name = data.Contact_Name.trim();
+        }
+      }
       
       const res = await fetch('/website-demos/excellentzohocrm/api/deals', {
         method: 'POST',
@@ -62,6 +82,7 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
       setFormData({
         Deal_Name: defaultName || '',
         Account_Name: '',
+        Contact_Name: '',
         Amount: '',
         Stage: 'Qualification',
         Closing_Date: new Date().toISOString().split('T')[0]
@@ -100,6 +121,25 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
             <datalist id="accounts-list">
               {accounts?.map((acc: any) => (
                 <option key={acc.id} value={acc.Account_Name} />
+              ))}
+            </datalist>
+          </div>
+        )}
+        
+        {!contactId && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Contact (Optional)</label>
+            <input 
+              type="text" 
+              list="contacts-list"
+              value={formData.Contact_Name} 
+              onChange={e => setFormData({...formData, Contact_Name: e.target.value})} 
+              placeholder="Select or type a new contact..."
+              className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" 
+            />
+            <datalist id="contacts-list">
+              {contacts?.map((c: any) => (
+                <option key={c.id} value={`${c.First_Name || ''} ${c.Last_Name || ''}`.trim()} />
               ))}
             </datalist>
           </div>
