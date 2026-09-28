@@ -12,6 +12,7 @@ import EditModal from '../../components/EditModal';
 
 import ContactSidePanel from './components/ContactSidePanel';
 
+import { ErrorBoundary } from '../../components/ErrorBoundary';
 export default function ContactsPage() {
   const { orgRole } = useAuth();
   const isAdmin = orgRole === 'org:admin';
@@ -85,6 +86,7 @@ export default function ContactsPage() {
 
   if (isLoading) {
     return (
+    <ErrorBoundary>
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-brand-red" />
       </div>
@@ -93,6 +95,7 @@ export default function ContactsPage() {
 
   if (error) {
     return (
+    <ErrorBoundary>
       <div className="rounded-md bg-red-50 p-4">
         <p className="text-sm font-medium text-red-800">Error loading contacts.</p>
       </div>
@@ -119,6 +122,7 @@ export default function ContactsPage() {
           const conn = parseLastConnection(row.Skype_ID);
           if (!conn) return <span className="text-gray-400">-</span>;
           return (
+    <ErrorBoundary>
             <span className="inline-flex items-center gap-1 text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full text-xs whitespace-nowrap">
               <span>{conn.icon}</span>
               <span>{conn.date}</span>
@@ -152,6 +156,7 @@ export default function ContactsPage() {
   ];
 
   return (
+    <ErrorBoundary>
     <div className="flex flex-col h-full overflow-hidden relative">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-medium text-gray-900">Contacts</h2>
@@ -206,8 +211,11 @@ export default function ContactsPage() {
         />
       )}
     </div>
+    </ErrorBoundary>
   );
 }
+
+
 
 
 
