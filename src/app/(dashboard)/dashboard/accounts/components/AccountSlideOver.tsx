@@ -15,6 +15,7 @@ interface AccountSlideOverProps {
 }
 
 export default function AccountSlideOver({ accountId, accountName, isOpen, onClose }: AccountSlideOverProps) {
+  const [isDealModalOpen, setIsDealModalOpen] = useState(false);
   const { data: contacts, isLoading: contactsLoading } = useQuery({
     queryKey: ['account-contacts', accountName],
     queryFn: async () => {
