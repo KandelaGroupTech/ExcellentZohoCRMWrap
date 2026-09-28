@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Loader2, Plus, Trash2, Edit2, ArrowUp, ArrowDown } from 'lucide-react';
-import { parseLastConnection } from '@/lib/utils';
+import { parseLastConnection, formatPhoneNumber } from '@/lib/utils';
 import { useAuth } from '@clerk/nextjs';
 import DataTable from '../../components/DataTable';
 import CreateContactModal from '../../components/CreateContactModal';
@@ -151,7 +151,7 @@ export default function ContactsPage() {
     },
     { key: 'Account_Name', label: 'Account' },
     { key: 'Email', label: 'Email' },
-    { key: 'Phone', label: 'Phone' },
+    { key: 'Phone', label: 'Phone', render: (row: any) => formatPhoneNumber(row.Phone) },
       { 
         key: 'Skype_ID', 
         label: 'Last Connection',

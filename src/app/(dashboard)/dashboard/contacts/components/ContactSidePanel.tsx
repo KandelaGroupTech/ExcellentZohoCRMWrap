@@ -1,4 +1,6 @@
 'use client';
+import { formatPhoneNumber } from '@/lib/utils';
+
 import { X, Edit2, Trash2, Mail, Phone, Building2, User, UserPlus, Clock, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
@@ -228,7 +230,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
             {contact?.Phone && (
               <a
-                href={`tel:${contact.Phone}`}
+                href={`tel:`}
                 onClick={() => registerCallClick({ entityId: contact.id, entityType: 'Contacts', name: fullName })}
                 className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >
@@ -237,7 +239,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-0.5">Phone</p>
-                  <p className="text-sm font-medium text-brand-red">{contact.Phone}</p>
+                  <p className="text-sm font-medium text-brand-red">{formatPhoneNumber(contact.Phone)}</p>
                 </div>
               </a>
             )}

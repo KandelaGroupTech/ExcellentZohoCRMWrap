@@ -1,3 +1,4 @@
+import { formatPhoneNumber } from '@/lib/utils';
 import { X, Edit2, Trash2, Mail, Phone, Building2, User, Target } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
@@ -90,7 +91,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
           <div className="flex flex-col gap-3">
             {lead?.Phone && (
               <a 
-                href={`tel:${lead.Phone}`}
+                href={`tel:`}
                 onClick={() => registerCallClick({ entityId: lead.id, entityType: 'Leads', name: fullName })}
                 className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >
@@ -99,7 +100,7 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-0.5">Phone</p>
-                  <p className="text-sm font-medium text-brand-red">{lead.Phone}</p>
+                  <p className="text-sm font-medium text-brand-red">{formatPhoneNumber(lead.Phone)}</p>
                 </div>
               </a>
             )}

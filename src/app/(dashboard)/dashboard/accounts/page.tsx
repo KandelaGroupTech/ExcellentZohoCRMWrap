@@ -1,4 +1,6 @@
 'use client';
+import { formatPhoneNumber } from '@/lib/utils';
+
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -89,7 +91,7 @@ export default function AccountsPage() {
     { key: 'Account_Name', label: 'Account Name' },
     { key: 'Industry', label: 'Industry' },
     { key: 'Website', label: 'Website' },
-    { key: 'Phone', label: 'Phone' },
+    { key: 'Phone', label: 'Phone', render: (row: any) => formatPhoneNumber(row.Phone) },
     { 
       key: 'actions', 
       label: '', 
@@ -151,7 +153,7 @@ export default function AccountsPage() {
             { key: 'Account_Name', label: 'Account Name' },
             { key: 'Industry', label: 'Industry' },
             { key: 'Website', label: 'Website' },
-            { key: 'Phone', label: 'Phone' },
+            { key: 'Phone', label: 'Phone', type: 'tel' },
           ]}
           initialData={editingRecord}
           onSave={async (data) => {
@@ -162,4 +164,5 @@ export default function AccountsPage() {
     </div>
   );
 }
+
 

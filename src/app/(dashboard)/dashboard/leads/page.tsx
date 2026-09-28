@@ -1,4 +1,6 @@
 'use client';
+import { formatPhoneNumber } from '@/lib/utils';
+
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -109,7 +111,7 @@ export default function LeadsPage() {
     },
     { key: 'Company', label: 'Company' },
     { key: 'Email', label: 'Email' },
-    { key: 'Phone', label: 'Phone' },
+    { key: 'Phone', label: 'Phone', render: (row: any) => formatPhoneNumber(row.Phone) },
     { key: 'Lead_Status', label: 'Status' },
     { key: 'Lead_Source', label: 'Source' },
     {

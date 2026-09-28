@@ -1,4 +1,6 @@
 'use client';
+import { formatPhoneNumber } from '@/lib/utils';
+
 
 import { X, Loader2, Building, Phone, Globe, DollarSign, MapPin } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -95,7 +97,7 @@ export default function AccountSlideOver({ accountId, accountName, isOpen, onClo
                   <div key={contact.id} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
                     <p className="text-sm font-medium text-gray-900">{contact.First_Name} {contact.Last_Name}</p>
                     {contact.Email && <p className="text-xs text-gray-500 mt-1">{contact.Email}</p>}
-                    {contact.Phone && <p className="text-xs text-gray-500 mt-1">{contact.Phone}</p>}
+                    {contact.Phone && <p className="text-xs text-gray-500 mt-1">{formatPhoneNumber(contact.Phone)}</p>}
                   </div>
                 ))}
               </div>

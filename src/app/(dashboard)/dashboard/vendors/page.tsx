@@ -1,4 +1,6 @@
 'use client';
+import { formatPhoneNumber } from '@/lib/utils';
+
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -339,14 +341,14 @@ export default function VendorsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {vendor.Phone ? (
                             <a
-                              href={`tel:${vendor.Phone}`}
+                              href={`tel:`}
                               className="text-brand-red hover:underline"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
                               }}
                             >
-                              {vendor.Phone}
+                              {formatPhoneNumber(vendor.Phone)}
                             </a>
                           ) : '—'}
                         </td>
@@ -419,14 +421,14 @@ export default function VendorsPage() {
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500">Main Phone</span>
                             <a 
-                              href={`tel:${vendor.Phone}`} 
+                              href={`tel:`} 
                               className="text-brand-red font-medium" 
                               onClick={e => {
                                 e.stopPropagation();
                                 registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
                               }}
                             >
-                              {vendor.Phone}
+                              {formatPhoneNumber(vendor.Phone)}
                             </a>
                           </div>
                         )}
