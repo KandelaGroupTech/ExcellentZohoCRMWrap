@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Loader2, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit2, ArrowUp, ArrowDown } from 'lucide-react';
 import { parseLastConnection } from '@/lib/utils';
 import { useAuth } from '@clerk/nextjs';
 import DataTable from '../../components/DataTable';
@@ -19,6 +19,9 @@ export default function ContactsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
   const [selectedContact, setSelectedContact] = useState<any | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'account'>('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [accountFilter, setAccountFilter] = useState<string>('all');
   
   const queryClient = useQueryClient();
 
@@ -84,6 +87,15 @@ export default function ContactsPage() {
     }
   });
 
+  useEffect(() => {
+    if (selectedContact && contacts) {
+      const freshContact = contacts.find((c: any) => c.id === selectedContact.id);
+      if (freshContact && JSON.stringify(freshContact) !== JSON.stringify(selectedContact)) {
+        setSelectedContact(freshContact);
+      }
+    }
+  }, [contacts, selectedContact]);
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -99,6 +111,33 @@ export default function ContactsPage() {
       </div>
     );
   }
+
+  const uniqueAccounts = Array.from(new Set((contacts || []).map((c: any) => {
+    const acc = c.Account_Name;
+    return typeof acc === 'object' ? acc?.name : acc;
+  }).filter(Boolean))).sort() as string[];
+
+  let processedContacts = [...(contacts || [])];
+  
+  if (accountFilter !== 'all') {
+    processedContacts = processedContacts.filter(c => {
+      const acc = c.Account_Name;
+      const accName = typeof acc === 'object' ? acc?.name : acc;
+      return accName === accountFilter;
+    });
+  }
+
+  processedContacts.sort((a, b) => {
+    if (sortBy === 'name') {
+      const nameA = ${a.First_Name || ''} .trim().toLowerCase();
+      const nameB = ${b.First_Name || ''} .trim().toLowerCase();
+      return sortDir === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    } else {
+      const accA = (typeof a.Account_Name === 'object' ? a.Account_Name?.name : a.Account_Name)?.toLowerCase() || '';
+      const accB = (typeof b.Account_Name === 'object' ? b.Account_Name?.name : b.Account_Name)?.toLowerCase() || '';
+      return sortDir === 'asc' ? accA.localeCompare(accB) : accB.localeCompare(accA);
+    }
+  });
 
   const columns = [
     { 
@@ -166,7 +205,7 @@ export default function ContactsPage() {
       </div>
       <div className="flex-1 overflow-hidden">
         <DataTable 
-          data={contacts || []} 
+          data={processedContacts} 
           columns={columns} 
           searchPlaceholder="Search by Name..." 
           searchKey={['First_Name', 'Last_Name']} 
@@ -211,6 +250,8 @@ export default function ContactsPage() {
     </ErrorBoundary>
   );
 }
+
+
 
 
 

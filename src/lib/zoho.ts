@@ -92,7 +92,7 @@ export async function fetchContacts() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const fields = 'First_Name,Last_Name,Account_Name,Email,Phone,Title';
+  const fields = 'First_Name,Last_Name,Account_Name,Email,Phone,Title,Skype_ID';
   const response = await fetch(`${domain}/crm/v6/Contacts?fields=${fields}`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
@@ -109,7 +109,7 @@ export async function fetchContact(id: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const fields = 'First_Name,Last_Name,Account_Name,Email,Phone,Title';
+  const fields = 'First_Name,Last_Name,Account_Name,Email,Phone,Title,Skype_ID';
   const response = await fetch(`${domain}/crm/v6/Contacts/${id}?fields=${fields}`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
@@ -576,3 +576,4 @@ export async function createNote(data: { Parent_Id: string, Note_Content: string
 export async function deleteAccount(id: string) {
   return deleteRecord('Accounts', id);
 }
+
