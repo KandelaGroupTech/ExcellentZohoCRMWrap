@@ -616,9 +616,8 @@ export async function getDealAttachments(dealId: string) {
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` }
   });
   // Return empty array if not found or no attachments
-  if (!res.ok) {
-    return { data: [] };
-  }
+  if (res.status === 204) return { data: [] };
+  if (!res.ok) return { data: [] };
   return res.json();
 }
 
