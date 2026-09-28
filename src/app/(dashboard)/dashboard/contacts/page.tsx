@@ -203,6 +203,40 @@ export default function ContactsPage() {
           </button>
         )}
       </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-4 bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Filter Account:</span>
+          <select
+            value={accountFilter}
+            onChange={(e) => setAccountFilter(e.target.value)}
+            className="text-sm border-gray-300 rounded-md py-1.5 pl-3 pr-8 focus:ring-brand-red focus:border-brand-red border"
+          >
+            <option value="all">All Accounts</option>
+            {uniqueAccounts.map((acc: string) => (
+              <option key={acc} value={acc}>{acc}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Sort By:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="text-sm border-gray-300 rounded-md py-1.5 pl-3 pr-8 focus:ring-brand-red focus:border-brand-red border"
+          >
+            <option value="name">Name</option>
+            <option value="account">Account</option>
+          </select>
+          <button
+            onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
+            className="p-1.5 text-gray-500 hover:text-brand-red hover:bg-red-50 rounded-md transition-colors border border-gray-200 bg-gray-50 ml-1"
+            title={sortDir === 'asc' ? "Sort Descending" : "Sort Ascending"}
+          >
+            {sortDir === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
       <div className="flex-1 overflow-hidden">
         <DataTable 
           data={processedContacts} 
