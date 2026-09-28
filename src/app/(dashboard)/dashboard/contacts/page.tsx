@@ -127,7 +127,6 @@ export default function ContactsPage() {
         }
       },
     { key: 'Title', label: 'Title' },
-            { key: 'Skype_ID', label: 'Last Connection (e.g. Phone | 2026-10-14)' },
     {
       key: 'actions',
       label: '',

@@ -20,14 +20,14 @@ export const formatPhoneNumber = (value: string) => {
 export function parseLastConnection(skypeId?: string) {
   if (!skypeId) return null;
   const parts = skypeId.split('|').map(s => s.trim());
-  if (parts.length < 2) return { type: 'Unknown', date: skypeId, icon: '???' };
+  if (parts.length < 2) return { type: 'Unknown', date: skypeId, icon: '\uD83D\uDCC5' };
   const type = parts[0];
   const date = parts[1];
-  let icon = '???';
-  if (type.toLowerCase().includes('phone')) icon = '??';
-  if (type.toLowerCase().includes('email')) icon = '??';
-  if (type.toLowerCase().includes('text')) icon = '??';
-  if (type.toLowerCase().includes('meet')) icon = '??';
-  if (type.toLowerCase().includes('social')) icon = '??';
+  let icon = '\uD83D\uDCC5';
+  if (type.toLowerCase().includes('phone')) icon = '\uD83D\uDCDE';
+  if (type.toLowerCase().includes('email')) icon = '\u2709\uFE0F';
+  if (type.toLowerCase().includes('text')) icon = '\uD83D\uDCAC';
+  if (type.toLowerCase().includes('meet')) icon = '\uD83E\uDD1D';
+  if (type.toLowerCase().includes('social')) icon = '\uD83D\uDD17';
   return { type, date, icon };
 }
