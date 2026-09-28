@@ -2,7 +2,9 @@
 import { formatPhoneNumber } from '@/lib/utils';
 
 
-import { X, Loader2, Building, Phone, Globe, DollarSign, MapPin } from 'lucide-react';
+import { X, Loader2, Building, Phone, Globe, DollarSign, MapPin, Plus } from 'lucide-react';
+import { useState } from 'react';
+import CreateDealModal from '../../../components/CreateDealModal';
 import { useQuery } from '@tanstack/react-query';
 
 interface AccountSlideOverProps {
@@ -64,7 +66,12 @@ export default function AccountSlideOver({ accountId, accountName, isOpen, onClo
           
           {/* Linked Deals Section */}
           <section>
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Pipeline Deals</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Pipeline Deals</h3>
+              <button onClick={() => setIsDealModalOpen(true)} className="inline-flex items-center text-xs font-medium text-brand-red hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md transition-colors">
+                <Plus className="h-3 w-3 mr-1" /> New Deal
+              </button>
+            </div>
             {dealsLoading ? (
               <div className="flex justify-center p-4"><Loader2 className="h-5 w-5 animate-spin text-gray-400" /></div>
             ) : deals?.length > 0 ? (
@@ -108,6 +115,14 @@ export default function AccountSlideOver({ accountId, accountName, isOpen, onClo
 
         </div>
       </div>
+      {accountId && (
+        <CreateDealModal 
+          isOpen={isDealModalOpen} 
+          onClose={() => setIsDealModalOpen(false)} 
+          accountId={accountId}
+          defaultName={`${accountName} Deal`}
+        />
+      )}
     </div>
   );
 }

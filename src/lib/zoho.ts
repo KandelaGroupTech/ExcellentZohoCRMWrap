@@ -394,7 +394,7 @@ export async function deleteContact(id: string) {
   return deleteRecord('Contacts', id);
 }
 
-export async function createDeal(data: { Deal_Name: string, Account_Name?: string, Amount: number, Stage: string, Closing_Date: string }) {
+export async function createDeal(data: { Deal_Name: string, Account_Name?: any, Contact_Name?: any, Amount: number, Stage: string, Closing_Date: string }) {
   return createRecord('Deals', data);
 }
 
@@ -410,7 +410,7 @@ export async function createLead(data: { First_Name: string, Last_Name: string, 
   return createRecord('Leads', data);
 }
 
-export async function createContact(data: { First_Name: string, Last_Name: string, Account_Name?: string, Email: string, Phone: string }) {
+export async function createContact(data: { First_Name: string, Last_Name: string, Account_Name?: any, Contact_Name?: any, Email: string, Phone: string }) {
   // If Account_Name is a string, it creates an account if not exist or links it.
   return createRecord('Contacts', data);
 }
@@ -577,3 +577,18 @@ export async function deleteAccount(id: string) {
   return deleteRecord('Accounts', id);
 }
 
+export async function fetchDealsForContact(contactId: string) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  
+  const response = await fetch(`${domain}/crm/v6/Deals/search?criteria=(Contact_Name:equals:${contactId})`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+
+  if (response.status === 204) return [];
+  if (!response.ok) throw new Error('Failed to fetch deals for contact');
+  const data = await response.json();
+  return data.data || [];
+}

@@ -1,14 +1,14 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import Modal from './Modal';
 
-export default function CreateDealModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+export default function CreateDealModal({ isOpen, onClose, accountId, contactId, defaultName }: { isOpen: boolean, onClose: () => void, accountId?: string, contactId?: string, defaultName?: string }) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    Deal_Name: '',
+    Deal_Name: defaultName || '',
     Amount: '',
     Stage: 'Qualification',
     Closing_Date: new Date().toISOString().split('T')[0]
@@ -16,10 +16,13 @@ export default function CreateDealModal({ isOpen, onClose }: { isOpen: boolean, 
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const payload = {
+      const payload: any = {
         ...data,
         Amount: parseFloat(data.Amount) || 0
       };
+      if (accountId) payload.Account_Name = accountId;
+      if (contactId) payload.Contact_Name = contactId;
+      
       const res = await fetch('/website-demos/excellentzohocrm/api/deals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -33,9 +36,11 @@ export default function CreateDealModal({ isOpen, onClose }: { isOpen: boolean, 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      queryClient.invalidateQueries({ queryKey: ['account-deals'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-deals'] });
       onClose();
       setFormData({
-        Deal_Name: '',
+        Deal_Name: defaultName || '',
         Amount: '',
         Stage: 'Qualification',
         Closing_Date: new Date().toISOString().split('T')[0]
