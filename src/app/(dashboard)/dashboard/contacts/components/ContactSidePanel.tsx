@@ -3,9 +3,23 @@ import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { parseLastConnection } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+
+function parseLastTouch(skypeId?: string) {
+  if (!skypeId) return null;
+  const parts = skypeId.split('|').map(s => s.trim());
+  if (parts.length < 2) return { type: 'Unknown', date: skypeId, icon: '\uD83D\uDCC5' };
+  const type = parts[0];
+  const date = parts[1];
+  let icon = '\uD83D\uDCC5';
+  if (type.toLowerCase().includes('phone')) icon = '\uD83D\uDCDE';
+  if (type.toLowerCase().includes('email')) icon = '\u2709\uFE0F';
+  if (type.toLowerCase().includes('text')) icon = '\uD83D\uDCAC';
+  if (type.toLowerCase().includes('meet')) icon = '\uD83E\uDD1D';
+  if (type.toLowerCase().includes('social')) icon = '\uD83D\uDD17';
+  return { type, date, icon };
+}
 
 interface ContactSidePanelProps {
   contact: any | null;
@@ -22,12 +36,8 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
   const [isLoggingTouch, setIsLoggingTouch] = useState(false);
-  
   const [touchType, setTouchType] = useState('Email');
-  const [touchDate, setTouchDate] = useState(() => {
-    const d = new Date();
-    return d.toISOString().split('T')[0];
-  });
+  const [touchDate, setTouchDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     setMounted(true);
@@ -37,8 +47,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
   const fullName = `${contact?.First_Name || ''} ${contact?.Last_Name || ''}`.trim() || 'Unnamed Contact';
   const accountName = typeof contact?.Account_Name === 'object' ? contact?.Account_Name?.name : contact?.Account_Name;
-
-  const lastConnection = parseLastConnection(contact?.Skype_ID);
+  const lastConnection = parseLastTouch(contact?.Skype_ID);
 
   const handleSaveToPhone = () => {
     if (!contact) return;
@@ -55,12 +64,12 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
   };
 
   const logTouchMutation = useMutation({
-    mutationFn: async () => {
-      const payload = { Skype_ID: `${touchType} | ${touchDate}` };
-      const res = await fetch(`/website-demos/excellentzohocrm/api/contacts/${contact.id}`, {
+    mutationFn: async (vars: { type: string; date: string }) => {
+      const skypeVal = vars.type + ' | ' + vars.date;
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts/' + contact.id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ Skype_ID: skypeVal })
       });
       if (!res.ok) throw new Error('Failed to log touch');
       return res.json();
@@ -69,30 +78,34 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
       toast.success('Interaction logged!');
       setIsLoggingTouch(false);
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
-      if (contact) contact.Skype_ID = `${touchType} | ${touchDate}`;
     },
-    onError: () => toast.error('Failed to save log.')
+    onError: () => {
+      toast.error('Failed to save log.');
+    }
   });
 
   const handleLogTouchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    logTouchMutation.mutate();
+    logTouchMutation.mutate({ type: touchType, date: touchDate });
   };
 
   return createPortal(
     <>
+      {/* Backdrop */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/30 z-40 transition-opacity"
           onClick={onClose}
         />
       )}
 
-      <div 
+      {/* Slide-out Panel */}
+      <div
         className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-gray-50 shadow-2xl flex flex-col h-[100dvh] transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
+        {/* Header */}
         <div className="flex flex-col px-6 py-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -104,14 +117,14 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
                 <p className="text-sm text-gray-500">{contact?.Title || 'Contact'}</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors rounded-full p-1 hover:bg-gray-200"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
-          
+
           {lastConnection && (
             <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium bg-white border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full self-start shadow-sm">
               <span>{lastConnection.icon}</span>
@@ -120,6 +133,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
           )}
         </div>
 
+        {/* Action Bar (Edit / Delete) */}
         {isAdmin && (
           <div className="flex items-center gap-2 px-6 py-3 bg-white border-b border-gray-100">
             <button
@@ -141,11 +155,15 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
           </div>
         )}
 
+        {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+          {/* Quick Contact Links (Mobile Friendly) */}
           <div className="flex flex-col gap-3">
-            <button 
+            {/* Log a Touch */}
+            <button
               onClick={() => setIsLoggingTouch(!isLoggingTouch)}
-              className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group text-left w-full bg-white shadow-sm"
+              className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group text-left w-full"
             >
               <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3 shrink-0">
                 <Clock className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
@@ -157,24 +175,24 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
             </button>
 
             {isLoggingTouch && (
-              <form onSubmit={handleLogTouchSubmit} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-3 animate-in slide-in-from-top-2">
+              <form onSubmit={handleLogTouchSubmit} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Interaction Type</label>
-                  <select 
+                  <select
                     value={touchType}
                     onChange={e => setTouchType(e.target.value)}
                     className="w-full text-sm border-gray-300 rounded-md p-2 bg-white text-gray-900 focus:ring-brand-red focus:border-brand-red border"
                   >
-                    <option value="Phone">📞 Phone Call</option>
-                    <option value="Email">✉️ Email</option>
-                    <option value="Text">💬 Text Message</option>
-                    <option value="Meeting">🤝 In-Person Meeting</option>
-                    <option value="Social">🔗 Social Media</option>
+                    <option value="Phone">Phone Call</option>
+                    <option value="Email">Email</option>
+                    <option value="Text">Text Message</option>
+                    <option value="Meeting">In-Person Meeting</option>
+                    <option value="Social">Social Media</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Date</label>
-                  <input 
+                  <input
                     type="date"
                     value={touchDate}
                     onChange={e => setTouchDate(e.target.value)}
@@ -184,16 +202,17 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
                 <div className="flex justify-end gap-2 pt-2">
                   <button type="button" onClick={() => setIsLoggingTouch(false)} className="px-3 py-1.5 text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md font-medium">Cancel</button>
                   <button type="submit" disabled={logTouchMutation.isPending} className="px-3 py-1.5 text-xs text-white bg-brand-red hover:bg-brand-red/90 rounded-md font-medium inline-flex items-center">
-                    {logTouchMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                    {logTouchMutation.isPending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
                     Save
                   </button>
                 </div>
               </form>
             )}
 
-            <button 
+            {/* Save to Phone */}
+            <button
               onClick={handleSaveToPhone}
-              className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group text-left w-full bg-white shadow-sm"
+              className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group text-left w-full"
             >
               <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3 shrink-0">
                 <UserPlus className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
@@ -203,11 +222,12 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
                 <p className="text-sm font-medium text-brand-red">Add Contact</p>
               </div>
             </button>
+
             {contact?.Phone && (
-              <a 
+              <a
                 href={`tel:${contact.Phone}`}
                 onClick={() => registerCallClick({ entityId: contact.id, entityType: 'Contacts', name: fullName })}
-                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group bg-white shadow-sm"
+                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >
                 <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3">
                   <Phone className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
@@ -220,9 +240,9 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
             )}
 
             {contact?.Email && (
-              <a 
+              <a
                 href={`mailto:${contact.Email}`}
-                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group bg-white shadow-sm"
+                className="flex items-center p-3 rounded-lg border border-gray-200 hover:border-brand-red hover:bg-red-50 transition-colors group"
               >
                 <div className="h-8 w-8 rounded-full bg-gray-100 group-hover:bg-brand-red/10 flex items-center justify-center mr-3">
                   <Mail className="h-4 w-4 text-gray-500 group-hover:text-brand-red" />
@@ -235,18 +255,20 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
             )}
           </div>
 
+          {/* Details Section */}
           <div>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
               Contact Details
             </h3>
-            <div className="bg-white rounded-lg p-4 border border-gray-100 space-y-4 shadow-sm">
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 space-y-4">
+
               <div>
                 <label className="block text-xs text-gray-500 mb-1 flex items-center gap-1.5">
                   <Building2 className="h-3 w-3" />
                   Account / Company
                 </label>
                 <p className="text-sm font-medium text-gray-900">
-                  {accountName || '—'}
+                  {accountName || '\u2014'}
                 </p>
               </div>
 
@@ -256,11 +278,13 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
                   Title
                 </label>
                 <p className="text-sm font-medium text-gray-900">
-                  {contact?.Title || '—'}
+                  {contact?.Title || '\u2014'}
                 </p>
               </div>
+
             </div>
           </div>
+
         </div>
       </div>
     </>,
