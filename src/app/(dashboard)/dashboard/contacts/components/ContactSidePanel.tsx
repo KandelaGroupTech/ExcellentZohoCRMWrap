@@ -1,3 +1,4 @@
+'use client';
 import { X, Edit2, Trash2, Mail, Phone, Building2, User, UserPlus, Clock, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
@@ -39,6 +40,27 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
   const [touchType, setTouchType] = useState('Email');
   const [touchDate, setTouchDate] = useState(new Date().toISOString().split('T')[0]);
 
+  const logTouchMutation = useMutation({
+    mutationFn: async (vars: { type: string; date: string }) => {
+      const skypeVal = vars.type + ' | ' + vars.date;
+      const res = await fetch('/website-demos/excellentzohocrm/api/contacts/' + contact.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Skype_ID: skypeVal })
+      });
+      if (!res.ok) throw new Error('Failed to log touch');
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success('Interaction logged!');
+      setIsLoggingTouch(false);
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
+    },
+    onError: () => {
+      toast.error('Failed to save log.');
+    }
+  });
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -63,26 +85,7 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
     URL.revokeObjectURL(url);
   };
 
-  const logTouchMutation = useMutation({
-    mutationFn: async (vars: { type: string; date: string }) => {
-      const skypeVal = vars.type + ' | ' + vars.date;
-      const res = await fetch('/website-demos/excellentzohocrm/api/contacts/' + contact.id, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ Skype_ID: skypeVal })
-      });
-      if (!res.ok) throw new Error('Failed to log touch');
-      return res.json();
-    },
-    onSuccess: () => {
-      toast.success('Interaction logged!');
-      setIsLoggingTouch(false);
-      queryClient.invalidateQueries({ queryKey: ['contacts'] });
-    },
-    onError: () => {
-      toast.error('Failed to save log.');
-    }
-  });
+
 
   const handleLogTouchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,3 +294,5 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
     document.body
   );
 }
+
+
