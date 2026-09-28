@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X } from 'lucide-react';
+import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X, Paperclip, FileText, Download } from 'lucide-react';
 import { useAuth, useUser } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import Modal from '../../components/Modal';
