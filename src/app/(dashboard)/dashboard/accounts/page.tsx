@@ -48,7 +48,7 @@ export default function AccountsPage() {
     queryKey: ['accounts'],
     queryFn: async () => {
       const res = await fetch('/website-demos/excellentzohocrm/api/accounts');
-      if (!res.ok) throw new Error('Failed to fetch accounts');
+      if (!res.ok) throw new Error(`Failed to fetch accounts: ${res.status} ${res.statusText}`);
       return res.json();
     }
   });
@@ -81,8 +81,14 @@ export default function AccountsPage() {
 
   if (error) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
-        <p className="text-sm font-medium text-red-800">Error loading accounts.</p>
+      <div className="rounded-md bg-red-50 p-4 space-y-2">
+        <p className="text-sm font-medium text-red-800">Error: {(error as Error)?.message || 'Error loading accounts.'}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="text-xs text-red-700 underline"
+        >
+          Tap to retry
+        </button>
       </div>
     );
   }

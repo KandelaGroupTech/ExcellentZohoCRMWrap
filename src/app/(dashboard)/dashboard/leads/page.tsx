@@ -78,7 +78,7 @@ export default function LeadsPage() {
     queryKey: ['leads'],
     queryFn: async () => {
       const res = await fetch('/website-demos/excellentzohocrm/api/leads');
-      if (!res.ok) throw new Error('Failed to fetch leads');
+      if (!res.ok) throw new Error(`Failed to fetch leads: ${res.status} ${res.statusText}`);
       return res.json();
     }
   });
@@ -93,8 +93,14 @@ export default function LeadsPage() {
 
   if (error) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
-        <p className="text-sm font-medium text-red-800">Error loading leads.</p>
+      <div className="rounded-md bg-red-50 p-4 space-y-2">
+        <p className="text-sm font-medium text-red-800">Error: {(error as Error)?.message || 'Error loading leads.'}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="text-xs text-red-700 underline"
+        >
+          Tap to retry
+        </button>
       </div>
     );
   }
