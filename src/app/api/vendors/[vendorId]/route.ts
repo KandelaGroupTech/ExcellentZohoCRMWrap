@@ -32,6 +32,10 @@ export async function PUT(req: Request, { params }: { params: { vendorId: string
     if (data.Fax !== undefined) allowed.Fax = data.Fax;
     if (data.Billing_City !== undefined) allowed.Billing_City = data.Billing_City;
     if (data.Billing_State !== undefined) allowed.Billing_State = data.Billing_State;
+    if (data.Billing_Street !== undefined) allowed.Billing_Street = data.Billing_Street;
+    if (data.Billing_Code !== undefined) allowed.Billing_Code = data.Billing_Code;
+    if (data.Billing_Country !== undefined) allowed.Billing_Country = data.Billing_Country;
+    if (data.Website !== undefined) allowed.Website = data.Website;
     if (data.Account_Name !== undefined) allowed.Account_Name = data.Account_Name;
     const result = await updateAccount(params.vendorId, allowed);
     return NextResponse.json(result);

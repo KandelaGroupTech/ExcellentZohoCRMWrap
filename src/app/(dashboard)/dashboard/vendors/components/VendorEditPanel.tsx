@@ -52,6 +52,10 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   const [accountName, setAccountName] = useState('');
   const [billingCity, setBillingCity] = useState('');
   const [billingState, setBillingState] = useState('');
+  const [billingStreet, setBillingStreet] = useState('');
+  const [billingCode, setBillingCode] = useState('');
+  const [billingCountry, setBillingCountry] = useState('');
+  const [website, setWebsite] = useState('');
 
   // Sync form when vendor changes
   useEffect(() => {
@@ -66,6 +70,10 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       setAccountName(vendor.Account_Name || '');
       setBillingCity(vendor.Billing_City || '');
       setBillingState(vendor.Billing_State || '');
+      setBillingStreet(vendor.Billing_Street || '');
+      setBillingCode(vendor.Billing_Code || '');
+      setBillingCountry(vendor.Billing_Country || '');
+      setWebsite(vendor.Website || '');
     }
   }, [vendor]);
 
@@ -103,7 +111,11 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       Fax: pocPhone,
       Account_Name: accountName,
       Billing_City: billingCity,
-      Billing_State: billingState
+      Billing_State: billingState,
+      Billing_Street: billingStreet,
+      Billing_Code: billingCode,
+      Billing_Country: billingCountry,
+      Website: website
     });
   };
 
@@ -166,26 +178,61 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
                 <input
                   type="text"
-                  value={billingCity}
-                  onChange={(e) => setBillingCity(e.target.value)}
+                  value={billingStreet}
+                  onChange={(e) => setBillingStreet(e.target.value)}
                   disabled={!isAdmin || updateMutation.isPending}
+                  placeholder="123 Main St"
                   className={inputClass}
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                <input
-                  type="text"
-                  value={billingState}
-                  onChange={(e) => setBillingState(e.target.value)}
-                  disabled={!isAdmin || updateMutation.isPending}
-                  className={inputClass}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={billingCity}
+                    onChange={(e) => setBillingCity(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <input
+                    type="text"
+                    value={billingState}
+                    onChange={(e) => setBillingState(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Zip / Postal Code</label>
+                  <input
+                    type="text"
+                    value={billingCode}
+                    onChange={(e) => setBillingCode(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                  <input
+                    type="text"
+                    value={billingCountry}
+                    onChange={(e) => setBillingCountry(e.target.value)}
+                    disabled={!isAdmin || updateMutation.isPending}
+                    className={inputClass}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -261,6 +308,17 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
                     className={inputClass}
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                <input
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  disabled={!isAdmin || updateMutation.isPending}
+                  placeholder="https://..."
+                  className={inputClass}
+                />
               </div>
             </div>
 
