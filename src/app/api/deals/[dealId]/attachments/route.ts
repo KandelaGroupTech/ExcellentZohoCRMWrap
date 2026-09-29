@@ -57,7 +57,7 @@ export async function POST(req: Request, { params }: { params: { dealId: string 
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
         'Content-Length': body.length.toString(),
       },
-      body: body,
+      body: body as any,
     });
 
     const responseText = await zohoRes.text();
