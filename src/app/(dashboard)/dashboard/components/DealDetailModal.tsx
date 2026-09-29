@@ -54,6 +54,26 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   });
 
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setUploadingFile(true);
+      uploadAttachmentMutation.mutate(e.dataTransfer.files[0]);
+    }
+  };
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const { data: attachmentsData, isLoading: isLoadingAttachments, isError: isErrorAttachments, error: errorAttachments } = useQuery({
@@ -584,7 +604,12 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
           )}
 
           {/* Attachments Section */}
-          <div className="mt-8">
+            <div 
+              className={`mt-8 p-3 -mx-3 rounded-xl border-2 transition-colors ${isDragging ? 'border-brand-red bg-red-50/50 border-dashed' : 'border-transparent bg-transparent'}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h4 className="text-md font-medium text-gray-900 flex items-center">
                 <Paperclip className="h-4 w-4 mr-2" /> Attachments / Proposals
