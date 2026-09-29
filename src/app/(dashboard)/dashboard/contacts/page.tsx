@@ -261,7 +261,7 @@ export default function ContactsPage() {
             <option value="account">Account</option>
           </select>
           <button
-            onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
+            onClick={() => setSortDir((d: any) => d === 'asc' ? 'desc' : 'asc')}
             className="p-1.5 text-gray-500 hover:text-brand-red hover:bg-red-50 rounded-md transition-colors border border-gray-200 bg-gray-50 ml-1"
             title={sortDir === 'asc' ? "Sort Descending" : "Sort Ascending"}
           >
