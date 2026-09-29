@@ -10,7 +10,8 @@ export async function GET(req: Request, { params }: { params: { dealId: string }
 
   try {
     const res = await getDealAttachments(params.dealId);
-    return NextResponse.json(res);
+    console.log('[GET ATTACHMENTS]', JSON.stringify(res));
+    return NextResponse.json(res, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
