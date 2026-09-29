@@ -8,6 +8,7 @@ import { formatPhoneNumber } from '../../../lib/utils';
 import { ChevronDown, Search } from 'lucide-react';
 
 import SearchableSelect from './SearchableSelect';
+import MultiSearchableSelect from './MultiSearchableSelect';
 
 export default function CreateVendorModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const queryClient = useQueryClient();
@@ -25,7 +26,9 @@ export default function CreateVendorModal({ isOpen, onClose }: { isOpen: boolean
     if (!vendors) return [];
     const set = new Set<string>();
     vendors.forEach((v: any) => {
-      if (v.Industry) set.add(v.Industry);
+      if (v.Industry) {
+        v.Industry.split(',').forEach((t: string) => set.add(t.trim()));
+      }
     });
     return Array.from(set).sort();
   }, [vendors]);
@@ -90,11 +93,12 @@ export default function CreateVendorModal({ isOpen, onClose }: { isOpen: boolean
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Trade (Category)</label>
-          <SearchableSelect
+          <MultiSearchableSelect
             options={tradeOptions}
             value={formData.Category}
             onChange={val => setFormData({...formData, Category: val})}
-            placeholder="Select a trade..."
+            placeholder="Select trades..."
+            allowCreate={true}
           />
         </div>
         

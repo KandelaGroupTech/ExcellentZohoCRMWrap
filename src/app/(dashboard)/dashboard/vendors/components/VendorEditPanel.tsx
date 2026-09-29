@@ -8,6 +8,7 @@ import { useAuth } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import { formatPhoneNumber } from '../../../../../lib/utils';
 import SearchableSelect from '../../../components/SearchableSelect';
+import MultiSearchableSelect from '../../../components/MultiSearchableSelect';
 import ActivityHistory from '../../../components/ActivityHistory';
 
 interface VendorEditPanelProps {
@@ -271,11 +272,12 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
                     className={inputClass}
                   />
                 ) : (
-                  <SearchableSelect
+                  <MultiSearchableSelect
                     options={existingTrades}
                     value={trade}
                     onChange={setTrade}
-                    placeholder="Select trade..."
+                    placeholder="Select trades..."
+                    allowCreate={true}
                   />
                 )}
               </div>

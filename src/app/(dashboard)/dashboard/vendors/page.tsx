@@ -144,7 +144,9 @@ export default function VendorsPage() {
     if (!vendors) return [];
     const set = new Set<string>();
     vendors.forEach((v: any) => {
-      if (v.Industry) set.add(v.Industry);
+      if (v.Industry) {
+        v.Industry.split(',').forEach((t: string) => set.add(t.trim()));
+      }
     });
     return Array.from(set).sort();
   }, [vendors]);
@@ -162,7 +164,7 @@ export default function VendorsPage() {
     if (!vendors) return [];
     const result = vendors.filter((v: any) => {
       const nameMatch = !search || (v.Account_Name || '').toLowerCase().includes(search.toLowerCase());
-      const tradeMatch = !tradeFilter || v.Industry === tradeFilter;
+      const tradeMatch = !tradeFilter || (v.Industry && v.Industry.split(',').map((t: string) => t.trim()).includes(tradeFilter));
       const statusMatch = statusFilter.length === 0 || statusFilter.some(filter => {
         return filter === 'Uncategorized' ? (!v.Rating || v.Rating === '') : v.Rating === filter;
       });
@@ -315,7 +317,13 @@ export default function VendorsPage() {
                           {getStatusBadge(vendor.Rating)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {vendor.Industry || '—'}
+                          <div className="flex flex-wrap gap-1">
+                            {vendor.Industry ? vendor.Industry.split(',').map((t: string) => t.trim()).filter(Boolean).map((trade: string, idx: number) => (
+                              <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {trade}
+                              </span>
+                            )) : '—'}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {vendor.Ticker_Symbol ? (
@@ -412,7 +420,13 @@ export default function VendorsPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="font-medium text-brand-red text-base">{vendor.Account_Name}</h3>
-                          <p className="text-xs text-gray-500 mt-0.5">{vendor.Industry || 'No Trade'}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {vendor.Industry ? vendor.Industry.split(',').map((t: string) => t.trim()).filter(Boolean).map((trade: string, idx: number) => (
+                              <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-800">
+                                {trade}
+                              </span>
+                            )) : <span className="text-xs text-gray-500">No Trade</span>}
+                          </div>
                         </div>
                         <div>{getStatusBadge(vendor.Rating)}</div>
                       </div>
