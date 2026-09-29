@@ -30,6 +30,9 @@ export async function PUT(req: Request, { params }: { params: { vendorId: string
     if (data.Rating !== undefined) allowed.Rating = data.Rating;
     if (data.Ticker_Symbol !== undefined) allowed.Ticker_Symbol = data.Ticker_Symbol;
     if (data.Fax !== undefined) allowed.Fax = data.Fax;
+    if (data.Billing_City !== undefined) allowed.Billing_City = data.Billing_City;
+    if (data.Billing_State !== undefined) allowed.Billing_State = data.Billing_State;
+    if (data.Account_Name !== undefined) allowed.Account_Name = data.Account_Name;
     const result = await updateAccount(params.vendorId, allowed);
     return NextResponse.json(result);
   } catch (error: any) {
