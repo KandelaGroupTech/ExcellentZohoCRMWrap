@@ -612,8 +612,8 @@ export async function uploadDealAttachment(dealId: string, formData: FormData) {
 export async function getDealAttachments(dealId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
-  const res = await fetch(${domain}/crm/v6/Deals//Attachments?fields=id,File_Name,Size,,, {
-    headers: { 'Authorization': Zoho-oauthtoken  },
+  const res = await fetch(`${domain}/crm/v6/Deals/${dealId}/Attachments?fields=id,File_Name,Size,$type,$se_module`, {
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
   });
   // Return empty array if not found or no attachments
