@@ -3,6 +3,7 @@
 import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { LayoutDashboard, Users, Contact, Building, Menu, X, Store } from "lucide-react";
 import HeaderActions from "./components/HeaderActions";
 import PullToRefresh from "./components/PullToRefresh";
@@ -79,7 +80,7 @@ export default function DashboardLayout({
 
         {/* Content */}
         <PullToRefresh className="flex-1 flex flex-col min-h-0 p-4 md:p-8 pb-20 md:pb-8">
-          {children}
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
         </PullToRefresh>
 
         {/* Bottom Navigation Bar for Mobile */}

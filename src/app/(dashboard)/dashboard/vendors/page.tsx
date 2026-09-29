@@ -3,6 +3,7 @@ import { formatPhoneNumber } from '@/lib/utils';
 
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useUrlState, useUrlStateArray } from '@/hooks/useUrlState';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Loader2, Edit2, Search, ChevronUp, ChevronDown, ChevronsUpDown, Phone, Mail, Plus, Trash2 } from 'lucide-react';
@@ -120,12 +121,12 @@ export default function VendorsPage() {
     }
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [tradeFilter, setTradeFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [search, setSearch] = useUrlState('q', '');
+  const [tradeFilter, setTradeFilter] = useUrlState('trade', '');
+  const [statusFilter, setStatusFilter] = useUrlStateArray('status', []);
   const [editingVendor, setEditingVendor] = useState<any | null>(null);
-  const [sortKey, setSortKey] = useState<'Account_Name' | 'Industry' | 'Rating' | null>(null);
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sortKey, setSortKey] = useUrlState('sortKey', '') as any;
+  const [sortDir, setSortDir] = useUrlState('sortDir', 'asc') as any;
 
   const { data: vendors, isLoading, error } = useQuery({
     queryKey: ['vendors'],
@@ -150,7 +151,7 @@ export default function VendorsPage() {
 
   const handleSort = (key: 'Account_Name' | 'Industry' | 'Rating') => {
     if (sortKey === key) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+      setSortDir((d: any) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortKey(key);
       setSortDir('asc');

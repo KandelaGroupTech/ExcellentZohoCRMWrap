@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useUrlState } from '@/hooks/useUrlState';
 import { Search } from 'lucide-react';
 
 import SwipeableCard from './SwipeableCard';
@@ -25,7 +26,7 @@ interface DataTableProps {
 }
 
 export default function DataTable({ data, columns, searchPlaceholder = "Search...", searchKey, searchFn, onRowClick, mobileCardRenderer, onEdit, onDelete }: DataTableProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useUrlState('q', '');
 
   const filteredData = data.filter((row) => {
     if (!query) return true;

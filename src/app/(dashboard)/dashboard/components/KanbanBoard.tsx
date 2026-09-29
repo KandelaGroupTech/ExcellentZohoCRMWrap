@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useUrlState } from '@/hooks/useUrlState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search, Paperclip } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -35,7 +36,7 @@ export default function KanbanBoard() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const isAdmin = orgRole === 'org:admin';
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useUrlState('q', '');
   const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const touchDragDealId = useRef<string | null>(null);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useUrlState } from '@/hooks/useUrlState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Loader2, Plus, Trash2, Edit2, ArrowUp, ArrowDown, AlertTriangle } from 'lucide-react';
@@ -19,9 +20,9 @@ export default function ContactsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
   const [selectedContact, setSelectedContact] = useState<any | null>(null);
-  const [sortBy, setSortBy] = useState<'name' | 'account'>('name');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const [accountFilter, setAccountFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useUrlState('sortBy', 'name') as any;
+  const [sortDir, setSortDir] = useUrlState('sortDir', 'asc') as any;
+  const [accountFilter, setAccountFilter] = useUrlState('account', 'all');
   
   const queryClient = useQueryClient();
 
