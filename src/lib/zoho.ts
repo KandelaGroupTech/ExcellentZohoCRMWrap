@@ -612,12 +612,16 @@ export async function uploadDealAttachment(dealId: string, formData: FormData) {
 export async function getDealAttachments(dealId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
-  const res = await fetch(`${domain}/crm/v6/Deals/${dealId}/Attachments`, {
-    headers: { 'Authorization': `Zoho-oauthtoken ${token}` }
+  const res = await fetch(${domain}/crm/v6/Deals//Attachments?fields=id,File_Name,Size,,, {
+    headers: { 'Authorization': Zoho-oauthtoken  },
+    cache: 'no-store'
   });
   // Return empty array if not found or no attachments
   if (res.status === 204) return { data: [] };
-  if (!res.ok) return { data: [] };
+  if (!res.ok) {
+    console.error('[ZOHO API ERROR] getDealAttachments:', res.status, await res.text());
+    return { data: [] };
+  }
   return res.json();
 }
 
