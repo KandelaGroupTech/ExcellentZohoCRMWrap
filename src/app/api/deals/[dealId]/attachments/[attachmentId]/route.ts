@@ -12,6 +12,12 @@ export async function GET(req: Request, { params }: { params: { dealId: string, 
     const headers = new Headers(zohoRes.headers);
     headers.delete('content-encoding');
     
+    // Zoho adds restrictive headers that prevent browsers from viewing files inline
+    headers.delete('content-security-policy');
+    headers.delete('x-content-type-options');
+    headers.delete('x-frame-options');
+    headers.delete('strict-transport-security');
+    
     // Change 'attachment' to 'inline' so browser views the file instead of downloading it
     const cd = headers.get('content-disposition');
     if (cd) {
