@@ -3,13 +3,20 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, Plus } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import { formatPhoneNumber } from '../../../../../lib/utils';
 import SearchableSelect from '../../../components/SearchableSelect';
 import MultiSearchableSelect from '../../../components/MultiSearchableSelect';
 import ActivityHistory from '../../../components/ActivityHistory';
+
+interface POC {
+  id: string;
+  name: string;
+  phone: string;
+  note: string;
+}
 
 interface VendorEditPanelProps {
   vendor: any | null;
@@ -48,8 +55,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   
   // New custom fields
   const [status, setStatus] = useState('');
-  const [pocName, setPocName] = useState('');
-  const [pocPhone, setPocPhone] = useState('');
+  const [pocs, setPocs] = useState<POC[]>([]);
   
   const [accountName, setAccountName] = useState('');
   const [billingCity, setBillingCity] = useState('');
@@ -65,10 +71,35 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       setTrade(vendor.Industry || '');
       setPhone(vendor.Phone || '');
       setEmail(vendor.Account_Site || '');
-      setNotes(vendor.Description || '');
+      let vendorNote = vendor.Description || '';
+      let parsedPocs: POC[] = [];
+
+      if (vendorNote.includes('\n---POC_DATA---\n')) {
+        const parts = vendorNote.split('\n---POC_DATA---\n');
+        vendorNote = parts[0];
+        try {
+          parsedPocs = JSON.parse(parts[1]);
+        } catch (e) {
+          console.error("Failed to parse POC data", e);
+        }
+      }
+
+      if (parsedPocs.length === 0) {
+        if (vendor.Ticker_Symbol || vendor.Fax) {
+          parsedPocs.push({
+            id: Math.random().toString(),
+            name: vendor.Ticker_Symbol || '',
+            phone: vendor.Fax || '',
+            note: ''
+          });
+        } else {
+          parsedPocs.push({ id: Math.random().toString(), name: '', phone: '', note: '' });
+        }
+      }
+
+      setNotes(vendorNote);
       setStatus(vendor.Rating || '');
-      setPocName(vendor.Ticker_Symbol || '');
-      setPocPhone(vendor.Fax || '');
+      setPocs(parsedPocs);
       setAccountName(vendor.Account_Name || '');
       setBillingCity(vendor.Billing_City || '');
       setBillingState(vendor.Billing_State || '');
@@ -78,6 +109,12 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       setWebsite(vendor.Website || '');
     }
   }, [vendor]);
+
+  const updatePoc = (index: number, field: keyof POC, value: string) => {
+    const newPocs = [...pocs];
+    newPocs[index] = { ...newPocs[index], [field]: value };
+    setPocs(newPocs);
+  };
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -107,10 +144,10 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       Industry: trade, 
       Phone: phone, 
       Account_Site: email, 
-      Description: notes,
+      Description: pocs.length > 0 ? notes + '\n---POC_DATA---\n' + JSON.stringify(pocs) : notes,
       Rating: status,
-      Ticker_Symbol: pocName,
-      Fax: pocPhone,
+      Ticker_Symbol: pocs[0]?.name || '',
+      Fax: pocs[0]?.phone || '',
       Account_Name: accountName,
       Billing_City: billingCity,
       Billing_State: billingState,
@@ -327,31 +364,67 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
 
             <div className="border-t border-gray-100 pt-4 mt-4 space-y-4">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Point of Contact
+                Points of Contact
               </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">POC Name</label>
-                  <input
-                    type="text"
-                    value={pocName}
-                    onChange={(e) => setPocName(e.target.value)}
-                    disabled={!isAdmin || updateMutation.isPending}
-                    placeholder="John Doe"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">POC Phone</label>
-                  <input
-                    type="tel"
-                    value={pocPhone}
-                    onChange={(e) => setPocPhone(formatPhoneNumber(e.target.value))}
-                    disabled={!isAdmin || updateMutation.isPending}
-                    placeholder="Direct/Cell..."
-                    className={inputClass}
-                  />
-                </div>
+              <div className="space-y-4">
+                {pocs.map((poc, idx) => (
+                  <div key={poc.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                    {pocs.length > 1 && isAdmin && (
+                      <button 
+                        onClick={() => setPocs(pocs.filter((_, i) => i !== idx))}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                        title="Remove Contact"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+                        <input
+                          type="text"
+                          value={poc.name}
+                          onChange={(e) => updatePoc(idx, 'name', e.target.value)}
+                          disabled={!isAdmin || updateMutation.isPending}
+                          placeholder="John Doe"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                        <input
+                          type="tel"
+                          value={poc.phone}
+                          onChange={(e) => updatePoc(idx, 'phone', formatPhoneNumber(e.target.value))}
+                          disabled={!isAdmin || updateMutation.isPending}
+                          placeholder="(555) 555-5555"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Note</label>
+                      <input
+                        type="text"
+                        value={poc.note}
+                        onChange={(e) => updatePoc(idx, 'note', e.target.value)}
+                        disabled={!isAdmin || updateMutation.isPending}
+                        placeholder="e.g. Works Tuesdays and Thursdays"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                ))}
+                
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setPocs([...pocs, { id: Math.random().toString(), name: '', phone: '', note: '' }])}
+                    className="flex items-center gap-2 text-sm text-brand-red font-medium hover:text-red-700"
+                  >
+                    <Plus className="h-4 w-4" /> Add Another Contact
+                  </button>
+                )}
               </div>
             </div>
 
