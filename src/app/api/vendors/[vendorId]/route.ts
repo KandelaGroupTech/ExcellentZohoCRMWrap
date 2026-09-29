@@ -26,7 +26,7 @@ export async function PUT(req: Request, { params }: { params: { vendorId: string
     if (data.Industry !== undefined) allowed.Industry = data.Industry;
     if (data.Description !== undefined) allowed.Description = data.Description;
     if (data.Phone !== undefined) allowed.Phone = data.Phone;
-    if (data.Email !== undefined) allowed.Email = data.Email;
+    if (data.Account_Site !== undefined) allowed.Account_Site = data.Account_Site;
     if (data.Rating !== undefined) allowed.Rating = data.Rating;
     if (data.Ticker_Symbol !== undefined) allowed.Ticker_Symbol = data.Ticker_Symbol;
     if (data.Fax !== undefined) allowed.Fax = data.Fax;

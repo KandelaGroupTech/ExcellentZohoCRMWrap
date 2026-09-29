@@ -255,7 +255,7 @@ export async function createVendor(vendorData: any) {
     Account_Name: vendorData.Vendor_Name,
     Account_Type: 'Vendor',
     Phone: vendorData.Phone,
-    Email: vendorData.Email,
+    Account_Site: vendorData.Email,
     Website: vendorData.Website,
     Industry: vendorData.Category
   };

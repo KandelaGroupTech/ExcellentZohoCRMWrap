@@ -58,7 +58,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
     if (vendor) {
       setTrade(vendor.Industry || '');
       setPhone(vendor.Phone || '');
-      setEmail(vendor.Email || '');
+      setEmail(vendor.Account_Site || '');
       setNotes(vendor.Description || '');
       setStatus(vendor.Rating || '');
       setPocName(vendor.Ticker_Symbol || '');
@@ -96,7 +96,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
     updateMutation.mutate({ 
       Industry: trade, 
       Phone: phone, 
-      Email: email, 
+      Account_Site: email, 
       Description: notes,
       Rating: status,
       Ticker_Symbol: pocName,
