@@ -308,7 +308,10 @@ export default function KanbanBoard() {
                           <p className="text-xs text-gray-600 mb-3 line-clamp-1">{deal.Account_Name.name}</p>
                         )}
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
+                          <div className="flex items-center space-x-2">
+  <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
+  {deal._has_attachments && <Paperclip className="w-3.5 h-3.5 text-gray-400" title="Has attachments" />}
+</div>
                           {outstandingTasks > 0 && (
                             <div className="flex items-center bg-brand-red/10 text-brand-red px-1.5 py-0.5 rounded text-[10px] font-bold">
                               <CheckSquare className="w-3 h-3 mr-1" />
@@ -416,7 +419,10 @@ export default function KanbanBoard() {
                       <p className="text-xs text-gray-600 mb-3">{deal.Account_Name.name}</p>
                     )}
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
+                      <div className="flex items-center space-x-2">
+  <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
+  {deal._has_attachments && <Paperclip className="w-3.5 h-3.5 text-gray-400" title="Has attachments" />}
+</div>
                       {outstandingTasks > 0 && (
                         <div className="flex items-center bg-brand-red/10 text-brand-red px-2 py-0.5 rounded text-xs font-bold" title={`${outstandingTasks} outstanding to-do${outstandingTasks > 1 ? 's' : ''}`}>
                           <CheckSquare className="w-3 h-3 mr-1" />

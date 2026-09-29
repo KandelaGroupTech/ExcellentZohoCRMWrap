@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X, Paperclip, FileText, Download } from 'lucide-react';
+import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X, Paperclip, FileText, ExternalLink } from 'lucide-react';
 import { useAuth, useUser } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import Modal from '../../components/Modal';
@@ -655,13 +655,13 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                       <div className="flex items-center space-x-2">
                         <a 
                           href={`/website-demos/excellentzohocrm/api/deals/${deal.id}/attachments/${att.id}`}
-                          download={att.File_Name}
+                          
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
                           title="Download"
                         >
-                          <Download className="h-4 w-4" />
+                          <ExternalLink className="h-4 w-4" />
                         </a>
                         {isAdmin && (
                           <button
