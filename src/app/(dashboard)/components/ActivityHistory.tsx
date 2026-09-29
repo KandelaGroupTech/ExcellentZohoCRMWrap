@@ -71,8 +71,15 @@ export default function ActivityHistory({ entityId, entityType }: ActivityHistor
             
             <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
               <div className="flex items-center justify-between mb-1">
-                <h4 className="text-sm font-semibold text-gray-900">
-                  {act.type === 'call' ? `Call: ${act.result || act.status}` : act.title}
+                <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <span>{act.title || (act.type === 'call' ? 'Call' : 'Note')}</span>
+                  {act.type === 'call' && (act.result || act.status) && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      act.result === 'Connected' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      {act.result || act.status}
+                    </span>
+                  )}
                 </h4>
                 <div className="flex items-center text-xs text-gray-500">
                   <Calendar className="w-3 h-3 mr-1" />

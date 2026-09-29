@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         await createNote({
           Parent_Id: parentId,
           se_module: seModule,
-          Note_Title: `Call Notes: ${data.Call_Result || 'Outbound'}`,
+          Note_Title: `Call Notes from ${data.initials || 'User'}: ${data.Call_Result || 'Outbound'}`,
           Note_Content: data.Description.trim()
         });
       } catch (noteErr) {

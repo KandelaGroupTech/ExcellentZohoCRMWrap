@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useUser } from '@clerk/nextjs';
 
 interface CallData {
   entityId: string;
@@ -78,6 +79,9 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
     }
   });
 
+  const { user } = useUser();
+  const initials = user?.firstName && user?.lastName ? `${user.firstName[0]}${user.lastName[0]}` : 'U';
+
   const handleLogCall = (result: 'Connected' | 'No Answer') => {
     if (!modalData) return;
     
@@ -85,7 +89,8 @@ export function CallLoggerProvider({ children }: { children: React.ReactNode }) 
     d.setMinutes(d.getMinutes() - 6); // Set start time to 6 minutes ago so that 5 min duration is valid
     
     const callData: any = {
-      Subject: 'Outbound Call',
+      initials,
+      Subject: `Call from ${initials || 'User'}`,
       Call_Type: 'Outbound',
       Call_Result: result,
       Description: notes || '',

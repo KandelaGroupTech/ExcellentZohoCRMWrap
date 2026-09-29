@@ -4,12 +4,15 @@ import { useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
 
 export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [selectedContactId, setSelectedContactId] = useState<string>('');
   const [notes, setNotes] = useState('');
 
   const queryClient = useQueryClient();
+  const { user } = useUser();
+  const initials = user?.firstName && user?.lastName ? `${user.firstName[0]}${user.lastName[0]}` : 'U';
 
   // Fetch contacts for the dropdown
   const { data: contacts = [], isLoading: isLoadingContacts } = useQuery({
@@ -29,7 +32,8 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
       const d = new Date(); d.setMinutes(d.getMinutes() - 6);
       
       const callData: any = {
-        Subject: 'Outbound Call',
+        initials,
+        Subject: `Call from ${initials || 'User'}`,
         Call_Type: 'Outbound',
         Call_Result: result,
         Description: notes || '',

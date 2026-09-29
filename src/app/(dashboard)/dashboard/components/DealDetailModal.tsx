@@ -336,6 +336,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', deal?.id] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
       setNewTaskSubject('');
       toast.success('Task created successfully');
     },
@@ -356,6 +357,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', deal?.id] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
     },
     onError: () => {
       toast.error('Failed to update task');
