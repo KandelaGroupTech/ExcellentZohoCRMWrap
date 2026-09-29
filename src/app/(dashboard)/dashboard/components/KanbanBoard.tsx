@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search } from 'lucide-react';
+import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search, Paperclip } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 

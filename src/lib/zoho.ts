@@ -56,10 +56,10 @@ export async function fetchDeals() {
   const domain = 'https://www.zohoapis.com';
 
   const fields = 'Deal_Name,Amount,Stage,Account_Name,Contact_Name,Closing_Date,Probability,Expected_Revenue,Next_Step,Lead_Source,Type,Description,Reason_For_Loss__s,Modified_Time';
-  const response = await fetch(`${domain}/crm/v6/Deals?fields=${fields}`, {
+  const response = await fetch(${domain}/crm/v6/Deals?fields=, {
     method: 'GET',
     headers: {
-      'Authorization': `Zoho-oauthtoken ${token}`,
+      'Authorization': Zoho-oauthtoken ,
     },
     cache: 'no-store'
   });
@@ -68,7 +68,31 @@ export async function fetchDeals() {
   if (!response.ok) throw new Error('Failed to fetch deals from Zoho');
 
   const data = await response.json();
-  return data.data || [];
+  const deals = data.data || [];
+
+  try {
+    const attRes = await fetch(${domain}/crm/v6/Attachments?fields=Parent_Id, {
+      headers: { 'Authorization': Zoho-oauthtoken  },
+      cache: 'no-store'
+    });
+    if (attRes.ok && attRes.status !== 204) {
+      const attData = await attRes.json();
+      if (attData.data) {
+        const dealsWithAtts = new Set(
+          attData.data
+            .filter((a: any) => a.Parent_Id?.module?.api_name === 'Deals')
+            .map((a: any) => a.Parent_Id?.id)
+        );
+        deals.forEach((d: any) => {
+          d._has_attachments = dealsWithAtts.has(d.id);
+        });
+      }
+    }
+  } catch (e) {
+    console.error('Failed to augment deals with attachment info:', e);
+  }
+
+  return deals;
 }
 
 export async function fetchLeads() {

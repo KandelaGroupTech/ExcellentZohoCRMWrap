@@ -12,6 +12,12 @@ export async function GET(req: Request, { params }: { params: { dealId: string, 
     const headers = new Headers(zohoRes.headers);
     headers.delete('content-encoding');
     
+    // Change 'attachment' to 'inline' so browser views the file instead of downloading it
+    const cd = headers.get('content-disposition');
+    if (cd) {
+      headers.set('content-disposition', cd.replace('attachment', 'inline'));
+    }
+    
     return new Response(zohoRes.body, {
       status: zohoRes.status,
       headers
