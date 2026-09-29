@@ -8,6 +8,7 @@ import { useAuth } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import { formatPhoneNumber } from '../../../../../lib/utils';
 import SearchableSelect from '../../../components/SearchableSelect';
+import ActivityHistory from '../../../components/ActivityHistory';
 
 interface VendorEditPanelProps {
   vendor: any | null;

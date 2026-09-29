@@ -8,6 +8,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import ActivityHistory from '../../../components/ActivityHistory';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
@@ -340,6 +341,8 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
             </div>
           </div>
+
+          <ActivityHistory entityId={contact.id} entityType="Contacts" />
 
         </div>
       </div>

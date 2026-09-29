@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useCallLogger } from '../../../components/CallLoggerProvider';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import ActivityHistory from '../../../components/ActivityHistory';
 
 interface LeadSidePanelProps {
   lead: any | null;
@@ -160,6 +161,8 @@ export default function LeadSidePanel({ lead, isOpen, onClose, onEdit, onDelete 
 
             </div>
           </div>
+
+          <ActivityHistory entityId={lead.id} entityType="Leads" />
 
         </div>
       </div>
