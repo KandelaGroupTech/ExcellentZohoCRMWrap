@@ -1,33 +1,46 @@
-import { useState, useEffect } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export function useUrlState(key: string, initialValue: string) {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  const [value, setValue] = useState(() => searchParams?.get(key) || initialValue);
+  // Initialize from Next.js searchParams
+  const [value, setValue] = useState(() => {
+    const param = searchParams?.get(key);
+    return param !== null ? param : initialValue;
+  });
 
+  const isMounted = useRef(false);
+
+  // 1. Sync React state -> URL
+  // Only depend on [value], NOT searchParams! This prevents Next.js router updates from triggering infinite loops.
   useEffect(() => {
-    const current = searchParams?.get(key);
-    if (current !== value) {
-      if (value === initialValue && current === null) return;
-      
-      const params = new URLSearchParams((searchParams?.toString() || ''));
-      if (value === initialValue || !value) {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-      
-      const newUrl = `${pathname}${params.toString() ? '?' + params.toString() : ''}`;
-      window.history.replaceState(null, '', newUrl);
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
     }
-  }, [value, key, pathname, searchParams, initialValue]);
+    
+    const params = new URLSearchParams(window.location.search);
+    
+    if (value === initialValue || !value) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    
+    const newSearch = params.toString() ? `?${params.toString()}` : '';
+    const newUrl = `${window.location.pathname}${newSearch}${window.location.hash}`;
+    
+    window.history.replaceState(null, '', newUrl);
+  }, [value, key, initialValue]);
 
+  // 2. Sync URL -> React state
+  // This catches Next.js router navigations (like clicking a sidebar link to clear filters)
   useEffect(() => {
-    const current = searchParams?.get(key) || initialValue;
-    if (current !== value) {
-      setValue(current);
+    const param = searchParams?.get(key);
+    const expectedValue = param !== null ? param : initialValue;
+    if (value !== expectedValue) {
+      setValue(expectedValue);
     }
   }, [searchParams, key, initialValue]);
 
@@ -35,7 +48,6 @@ export function useUrlState(key: string, initialValue: string) {
 }
 
 export function useUrlStateArray(key: string, initialValue: string[]) {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   
   const [value, setValue] = useState<string[]>(() => {
@@ -43,36 +55,44 @@ export function useUrlStateArray(key: string, initialValue: string[]) {
     return param ? param.split(',') : initialValue;
   });
 
-  useEffect(() => {
-    const current = searchParams?.get(key);
-    const valueStr = value.join(',');
-    const initialStr = initialValue.join(',');
-    
-    if (current !== valueStr) {
-      if (valueStr === initialStr && current === null) return;
-      
-      const params = new URLSearchParams((searchParams?.toString() || ''));
-      if (valueStr === initialStr || !valueStr) {
-        params.delete(key);
-      } else {
-        params.set(key, valueStr);
-      }
-      
-      const newUrl = `${pathname}${params.toString() ? '?' + params.toString() : ''}`;
-      window.history.replaceState(null, '', newUrl);
-    }
-  }, [value, key, pathname, searchParams, initialValue]);
+  const isMounted = useRef(false);
+  const initialValueRef = useRef(initialValue);
 
+  // 1. Sync React state -> URL
   useEffect(() => {
-    const current = searchParams?.get(key);
-    const initialStr = initialValue.join(',');
-    const valueStr = value.join(',');
-    
-    const nextStr = current || initialStr;
-    if (nextStr !== valueStr) {
-      setValue(nextStr ? nextStr.split(',') : []);
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
     }
-  }, [searchParams, key, initialValue]);
+    
+    const params = new URLSearchParams(window.location.search);
+    const valueStr = value.join(',');
+    const initialStr = initialValueRef.current.join(',');
+    
+    if (valueStr === initialStr || !valueStr) {
+      params.delete(key);
+    } else {
+      params.set(key, valueStr);
+    }
+    
+    const newSearch = params.toString() ? `?${params.toString()}` : '';
+    const newUrl = `${window.location.pathname}${newSearch}${window.location.hash}`;
+    
+    window.history.replaceState(null, '', newUrl);
+  }, [value, key]); 
+
+  // 2. Sync URL -> React state
+  useEffect(() => {
+    const param = searchParams?.get(key);
+    const expectedValue = param ? param.split(',') : initialValueRef.current;
+    
+    const valueStr = value.join(',');
+    const expectedStr = expectedValue.join(',');
+    
+    if (valueStr !== expectedStr) {
+      setValue(expectedValue);
+    }
+  }, [searchParams, key]);
 
   return [value, setValue] as const;
 }
