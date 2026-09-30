@@ -585,7 +585,10 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
               className="mt-4 flex gap-2" 
               onSubmit={(e) => {
                 e.preventDefault();
-                if (newTaskSubject.trim()) createTaskMutation.mutate(newTaskSubject);
+                if (newTaskSubject.trim()) {
+                  const subjectWithInitials = initials ? `${newTaskSubject.trim()} - ${initials}` : newTaskSubject.trim();
+                  createTaskMutation.mutate(subjectWithInitials);
+                }
               }}
             >
               <input 

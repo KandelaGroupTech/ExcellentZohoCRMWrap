@@ -470,7 +470,7 @@ export async function fetchTasksForDeal(dealId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const response = await fetch(`${domain}/crm/v6/Tasks/search?criteria=((SE_Module:equals:Deals)and(SEMODULE_ID:equals:${dealId}))`, {
+  const response = await fetch(`${domain}/crm/v6/Tasks/search?criteria=(What_Id:equals:${dealId})`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
@@ -483,8 +483,12 @@ export async function fetchTasksForDeal(dealId: string) {
   }
   
   const data = await response.json();
-  // Filter locally just to be absolutely sure we only get Deals tasks, in case SEMODULE_ID isn't unique
-  return (data.data || []).filter((t: any) => t.SE_Module === 'Deals' || t.$se_module === 'Deals');
+  // Filter locally just to be absolutely sure we only get Deals tasks
+  return (data.data || []).filter((t: any) => 
+    t.SE_Module === 'Deals' || 
+    t.$se_module === 'Deals' || 
+    (t.What_Id && t.What_Id.id === dealId)
+  );
 }
 
 export async function fetchTasks() {
@@ -510,8 +514,8 @@ export async function fetchTasks() {
 export async function createTask(data: { Subject: string, What_Id: string }) {
   return createRecord('Tasks', { 
     Subject: data.Subject, 
-    SE_Module: 'Deals',
-    SEMODULE_ID: data.What_Id,
+    $se_module: 'Deals',
+    What_Id: data.What_Id, // Zoho v6 can accept the ID directly or { id: data.What_Id }. The API often accepts just the ID string for What_Id in POST.
     Status: 'Not Started'
   });
 }
