@@ -495,7 +495,7 @@ export async function fetchTasks() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id,SEMODULE_ID,SE_Module`, {
+  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id,Who_Id,SEMODULE_ID,SE_Module`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
