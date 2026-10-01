@@ -515,7 +515,7 @@ export async function createTask(data: { Subject: string, What_Id: string }) {
   return createRecord('Tasks', { 
     Subject: data.Subject, 
     $se_module: 'Deals',
-    What_Id: data.What_Id, // Zoho v6 can accept the ID directly or { id: data.What_Id }. The API often accepts just the ID string for What_Id in POST.
+    What_Id: { id: data.What_Id }, // Enforce object format
     Status: 'Not Started'
   });
 }
