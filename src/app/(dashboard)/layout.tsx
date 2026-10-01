@@ -4,7 +4,7 @@ import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import { LayoutDashboard, Users, Contact, Building, Menu, X, Store } from "lucide-react";
+import { LayoutDashboard, Users, Contact, Building, Menu, X, Store, Columns } from "lucide-react";
 import HeaderActions from "./components/HeaderActions";
 import PullToRefresh from "./components/PullToRefresh";
 import { CallLoggerProvider } from "./components/CallLoggerProvider";
@@ -17,7 +17,8 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const navigation = [
-    { name: "Pipeline", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Pipeline", href: "/dashboard/pipeline", icon: Columns },
     { name: "Leads", href: "/dashboard/leads", icon: Users },
     { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
     { name: "Accounts", href: "/dashboard/accounts", icon: Building },
@@ -30,9 +31,10 @@ export default function DashboardLayout({
         <InteractiveBackground />
       {/* Sidebar for Desktop */}
       <div className="hidden md:flex inset-y-0 left-0 z-50 w-64 bg-brand-black border-r border-gray-800 flex-col">
-        <div className="flex h-16 shrink-0 items-center px-6 border-b border-gray-800 font-bold text-lg text-white">
+        <Link href="/dashboard" className="flex h-16 shrink-0 items-center px-6 border-b border-gray-800 font-bold text-lg text-white hover:text-gray-300 transition-colors">
+          <img src="/website-demos/excellentzohocrm/icon.png" alt="Logo" className="w-6 h-6 mr-3 rounded" />
           Journey Office Builders
-        </div>
+        </Link>
         <nav className="flex-1 space-y-1 px-3 py-4">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
@@ -72,7 +74,9 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <header className="bg-brand-black border-b border-gray-800 h-16 shrink-0 flex items-center px-4 md:px-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-white truncate">Dashboard</h1>
+          <Link href="/dashboard" className="text-xl font-semibold text-white truncate hover:text-gray-300 transition-colors">
+            Dashboard
+          </Link>
           <div className="ml-auto">
             <HeaderActions />
           </div>
