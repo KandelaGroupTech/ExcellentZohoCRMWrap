@@ -495,7 +495,7 @@ export async function fetchTasks() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id,Who_Id,SEMODULE_ID,SE_Module`, {
+  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id,SEMODULE_ID,SE_Module`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
@@ -515,7 +515,7 @@ export async function createTask(data: { Subject: string, What_Id: string }) {
   return createRecord('Tasks', { 
     Subject: data.Subject, 
     $se_module: 'Deals',
-    What_Id: data.What_Id, // Zoho v6 can accept the ID directly or { id: data.What_Id }. The API often accepts just the ID string for What_Id in POST.
+    What_Id: { id: data.What_Id }, // Enforce object format or { id: data.What_Id }. The API often accepts just the ID string for What_Id in POST.
     Status: 'Not Started'
   });
 }

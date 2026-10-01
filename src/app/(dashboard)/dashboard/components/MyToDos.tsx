@@ -54,8 +54,6 @@ export default function MyToDos() {
       groupName = task.What_Id.name;
     } else if (task.What_Id?.name) {
       groupName = task.What_Id.name;
-    } else if (task.Who_Id?.name) {
-      groupName = task.Who_Id.name;
     }
     
     if (!acc[groupName]) acc[groupName] = [];
@@ -78,7 +76,7 @@ export default function MyToDos() {
         </span>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar">
         {openTasks.length === 0 ? (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
@@ -89,13 +87,13 @@ export default function MyToDos() {
           </div>
         ) : (
           groupKeys.map(group => (
-            <div key={group} className="space-y-3">
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider sticky top-0 bg-white py-1 z-10">
+            <div key={group} className="space-y-1">
+              <h4 className="text-xs font-semibold text-brand-red uppercase tracking-wider sticky top-0 bg-white py-1 z-10">
                 {group}
               </h4>
-              <div className="space-y-2">
+              <div className="space-y-0.5">
                 {groupedTasks[group].map((task: any) => (
-                  <div key={task.id} className="group flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
+                  <div key={task.id} className="group flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
                     <button 
                       onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
                       className="mt-0.5 text-gray-400 hover:text-green-500 focus:outline-none transition-colors shrink-0"
