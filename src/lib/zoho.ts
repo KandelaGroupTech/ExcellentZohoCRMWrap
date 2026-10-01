@@ -51,6 +51,59 @@ export async function getAccessToken(): Promise<string> {
   return data.access_token;
 }
 
+async function fetchAllModuleRecords(module: string, fields: string): Promise<any[]> {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  let records: any[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore && page <= 50) {
+    const response = await fetch(
+      `${domain}/crm/v6/${module}?fields=${encodeURIComponent(fields)}&per_page=200&page=${page}`,
+      {
+        method: 'GET',
+        headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+        cache: 'no-store'
+      }
+    );
+
+    if (response.status === 204) break;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Failed to fetch ${module}:`, response.status, errorText);
+      throw new Error(`Failed to fetch ${module} from Zoho`);
+    }
+
+    const data = await response.json();
+    if (data.data && data.data.length > 0) {
+      records = records.concat(data.data);
+    }
+    hasMore = Boolean(data.info && data.info.more_records);
+    page++;
+  }
+
+  return records;
+}
+
+export async function fetchDealsForReports() {
+  return fetchAllModuleRecords(
+    'Deals',
+    'Deal_Name,Amount,Stage,Account_Name,Next_Step,Created_Time,Modified_Time,Last_Activity_Time,Stage_Modified_Time'
+  );
+}
+
+export async function fetchDealStageHistory() {
+  return fetchAllModuleRecords(
+    'DealHistory',
+    'Potential_Name,Stage,Modified_Time,Moved_To__s'
+  );
+}
+
+export async function fetchTasksForReports() {
+  return fetchAllModuleRecords('Tasks', 'Status,What_Id');
+}
+
 export async function fetchDeals() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';

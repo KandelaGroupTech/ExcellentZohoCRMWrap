@@ -108,7 +108,7 @@ export default function MultiSearchableSelect({
                 className="px-3 py-2 text-sm cursor-pointer rounded-md hover:bg-gray-100 text-brand-red font-medium"
                 onClick={(e) => { e.stopPropagation(); toggleOption(search.trim()); setSearch(''); }}
               >
-                Create "{search.trim()}"
+                Create &quot;{search.trim()}&quot;
               </div>
             )}
             {!showCreate && filtered.length === 0 && (
