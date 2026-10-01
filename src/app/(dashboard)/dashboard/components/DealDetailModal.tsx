@@ -32,6 +32,8 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const [editAccountValue, setEditAccountValue] = useState('');
   const [editingContact, setEditingContact] = useState(false);
   const [editContactValue, setEditContactValue] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState('');
 
   const { data: accounts } = useQuery({
     queryKey: ['accounts'],
@@ -324,6 +326,37 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     updateAmountMutation.mutate(parsed);
   };
 
+  const updateNameMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Deal_Name: name })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update deal name');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      setEditingName(false);
+      toast.success('Deal name updated');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to update deal name');
+    }
+  });
+
+  const handleNameSave = () => {
+    if (!editNameValue.trim()) {
+      toast.error('Please enter a deal name');
+      return;
+    }
+    updateNameMutation.mutate(editNameValue.trim());
+  };
+
   const createTaskMutation = useMutation({
     mutationFn: async (subject: string) => {
       const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/tasks`, {
@@ -367,10 +400,60 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   if (!deal) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={deal.Deal_Name}>
+    <Modal isOpen={isOpen} onClose={onClose} title={editingName ? 'Edit Deal' : deal.Deal_Name}>
       <div className="space-y-6">
         {/* Deal Info */}
         <div className="bg-gray-50 p-4 rounded-md">
+          {/* Editable Deal Name */}
+          <div className="mb-4">
+            <span className="block text-gray-500 text-sm mb-1">Deal Name</span>
+            {isAdmin && editingName ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleNameSave();
+                    if (e.key === 'Escape') setEditingName(false);
+                  }}
+                  autoFocus
+                  className="flex-1 px-2 py-1 text-sm border border-brand-red rounded-md focus:outline-none focus:ring-1 focus:ring-brand-red bg-white text-gray-900"
+                />
+                <button
+                  onClick={handleNameSave}
+                  disabled={updateNameMutation.isPending}
+                  className="p-1 text-green-600 hover:text-green-700 disabled:opacity-50"
+                  title="Save"
+                >
+                  {updateNameMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                </button>
+                <button
+                  onClick={() => setEditingName(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600"
+                  title="Cancel"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-900">{deal.Deal_Name}</span>
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      setEditNameValue(deal.Deal_Name || '');
+                      setEditingName(true);
+                    }}
+                    className="p-0.5 text-gray-400 hover:text-brand-red transition-colors"
+                    title="Edit deal name"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="block text-gray-500 mb-1">Stage</span>
