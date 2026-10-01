@@ -1,31 +1,40 @@
 'use client';
 
-import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { Plus } from 'lucide-react';
-import KanbanBoard from './components/KanbanBoard';
-import CreateDealModal from '../components/CreateDealModal';
+import MyToDos from './components/MyToDos';
+// Later we can import other widgets like PipelineSummary, ActivityFeed, etc.
 
-export default function DashboardIndex() {
+export default function DashboardHome() {
   const { orgRole } = useAuth();
-  const isAdmin = orgRole === 'org:admin';
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+  
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">Pipeline</h2>
-        {isAdmin && (
-          <button onClick={() => setIsModalOpen(true)} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90">
-            <Plus className="h-4 w-4 mr-2" />
-            New Deal
-          </button>
-        )}
+    <div className="flex flex-col h-full space-y-6 overflow-y-auto custom-scrollbar">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-900">Command Center</h2>
       </div>
-      <div className="flex-1 overflow-hidden">
-        <KanbanBoard />
+      
+      {/* 
+        For now, a simple grid that will hold the To-Dos list.
+        As we add more dashboard items (reports, summaries), we can expand this grid.
+      */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
+        
+        {/* Left Column: Actionable items like To-Dos */}
+        <div className="flex flex-col gap-6">
+          <MyToDos />
+        </div>
+        
+        {/* Right Column: Summaries, Reports, Recent Activity (Placeholders for now) */}
+        <div className="flex flex-col gap-6">
+          <div className="bg-gray-50 rounded-xl border border-gray-200 border-dashed p-8 flex flex-col items-center justify-center h-[300px] text-center">
+            <h3 className="text-sm font-semibold text-gray-600 mb-2">Reports & Summaries</h3>
+            <p className="text-xs text-gray-400 max-w-xs">
+              This space is reserved for future pipeline metrics, recent activity feeds, and custom reports.
+            </p>
+          </div>
+        </div>
+
       </div>
-      <CreateDealModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }
