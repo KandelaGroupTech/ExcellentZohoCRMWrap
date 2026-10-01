@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { Plus } from 'lucide-react';
-import KanbanBoard from './components/KanbanBoard';
-import CreateDealModal from '../components/CreateDealModal';
+import KanbanBoard from '../components/KanbanBoard';
+import CreateDealModal from '../../components/CreateDealModal';
 
 export default function DashboardIndex() {
   const { orgRole } = useAuth();
