@@ -54,7 +54,7 @@ export default function MyToDos() {
       groupName = task.What_Id.name;
     } else if (task.What_Id?.name) {
       groupName = task.What_Id.name;
-    } else if (task.Who_Id?.name) { groupName = task.Who_Id.name; }
+    }
     
     if (!acc[groupName]) acc[groupName] = [];
     acc[groupName].push(task);
