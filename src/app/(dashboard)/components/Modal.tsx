@@ -27,11 +27,11 @@ export default function Modal({
   if (!isOpen || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4 overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black bg-opacity-50 p-0 sm:p-4 overflow-hidden">
       <div className={`bg-gray-50 rounded-lg shadow-xl w-full ${maxWidth} flex flex-col max-h-[90dvh]`}>
         <div className="flex justify-between items-center p-4 border-b flex-shrink-0">
           <h3 className="text-lg font-semibold pr-4 truncate">{title}</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 flex-shrink-0 text-xl leading-none">
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 flex-shrink-0 text-xl leading-none w-11 h-11 flex items-center justify-center -mr-2">
             ✕
           </button>
         </div>

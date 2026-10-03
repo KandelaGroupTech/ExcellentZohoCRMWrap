@@ -25,3 +25,20 @@ body {
     text-wrap: balance;
   }
 }
+/* Add to globals.css */
+
+/* Prevent iOS Safari auto-zoom */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile Bottom Sheet Animation */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
