@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Circle, Loader2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
+import SwipeableCard from '../../components/SwipeableCard';
 
 export default function MyToDos() {
   const queryClient = useQueryClient();
@@ -54,7 +55,7 @@ export default function MyToDos() {
       groupName = task.What_Id.name;
     } else if (task.What_Id?.name) {
       groupName = task.What_Id.name;
-    }
+    } else if (task.Who_Id?.name) { groupName = task.Who_Id.name; }
     
     if (!acc[groupName]) acc[groupName] = [];
     acc[groupName].push(task);
@@ -93,20 +94,24 @@ export default function MyToDos() {
               </h4>
               <div className="space-y-0.5">
                 {groupedTasks[group].map((task: any) => (
-                  <div key={task.id} className="group flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
-                    <button 
-                      onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
-                      className="mt-0.5 text-gray-400 hover:text-green-500 focus:outline-none transition-colors shrink-0"
-                    >
-                      <Circle className="w-5 h-5" />
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 break-words">
-                        {task.Subject}
-                      </p>
-                      {/* Optional: Add due date or priority here if they exist in the Zoho task payload */}
+                  <SwipeableCard
+                    key={task.id}
+                    onComplete={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
+                  >
+                    <div className="group flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                      <button 
+                        onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
+                        className="mt-0.5 text-gray-400 hover:text-green-500 focus:outline-none transition-colors shrink-0"
+                      >
+                        <Circle className="w-5 h-5" />
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 break-words">
+                          {task.Subject}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </SwipeableCard>
                 ))}
               </div>
             </div>
