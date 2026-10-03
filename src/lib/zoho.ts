@@ -389,6 +389,63 @@ export async function updateAccount(id: string, data: any) {
   return updateRecord('Accounts', id, data);
 }
 
+/**
+ * Update only the Description field on Accounts, in batches of 100.
+ * Pass null to clear the field. No other Account fields are sent.
+ */
+export async function updateAccountDescriptions(
+  updates: { id: string; Description: string | null }[]
+): Promise<{ id: string; status: 'success' | 'error'; message?: string }[]> {
+  if (updates.length === 0) return [];
+
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  const results: { id: string; status: 'success' | 'error'; message?: string }[] = [];
+
+  for (let i = 0; i < updates.length; i += 100) {
+    const chunk = updates.slice(i, i + 100);
+    const response = await fetch(`${domain}/crm/v6/Accounts`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Zoho-oauthtoken ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: chunk.map((update) => ({
+          id: update.id,
+          Description: update.Description,
+        })),
+      }),
+      cache: 'no-store',
+    });
+
+    const responseData = await response.json().catch(() => ({}));
+    const rows = Array.isArray(responseData.data) ? responseData.data : null;
+    if (!rows) {
+      const message = responseData.message || `HTTP ${response.status}`;
+      for (const update of chunk) {
+        results.push({ id: update.id, status: 'error', message });
+      }
+      continue;
+    }
+
+    rows.forEach((row: any, index: number) => {
+      const id = row?.details?.id || chunk[index]?.id;
+      if (row?.status === 'success') {
+        results.push({ id, status: 'success' });
+      } else {
+        results.push({
+          id,
+          status: 'error',
+          message: row?.message || row?.code || 'Update failed',
+        });
+      }
+    });
+  }
+
+  return results;
+}
+
 async function deleteRecord(module: string, recordId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';

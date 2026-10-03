@@ -7,16 +7,10 @@ import { X, Loader2, Plus } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import { formatPhoneNumber } from '../../../../../lib/utils';
+import { buildVendorContactWrite, initialVendorPocs, type VendorPoc } from '@/lib/vendorPoc';
 import SearchableSelect from '../../../components/SearchableSelect';
 import MultiSearchableSelect from '../../../components/MultiSearchableSelect';
 import ActivityHistory from '../../../components/ActivityHistory';
-
-interface POC {
-  id: string;
-  name: string;
-  phone: string;
-  note: string;
-}
 
 interface VendorEditPanelProps {
   vendor: any | null;
@@ -55,7 +49,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   
   // New custom fields
   const [status, setStatus] = useState('');
-  const [pocs, setPocs] = useState<POC[]>([]);
+  const [pocs, setPocs] = useState<VendorPoc[]>([]);
   
   const [accountName, setAccountName] = useState('');
   const [billingCity, setBillingCity] = useState('');
@@ -71,35 +65,16 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
       setTrade(vendor.Industry || '');
       setPhone(vendor.Phone || '');
       setEmail(vendor.Account_Site || '');
-      let vendorNote = vendor.Description || '';
-      let parsedPocs: POC[] = [];
+      // A stored blank contact is the placeholder row, not a real person.
+      // Fall back to Ticker Symbol / Fax only when no real contact is stored.
+      const loaded = initialVendorPocs(vendor.Description, {
+        name: vendor.Ticker_Symbol,
+        phone: vendor.Fax,
+      });
 
-      if (vendorNote.includes('\n---POC_DATA---\n')) {
-        const parts = vendorNote.split('\n---POC_DATA---\n');
-        vendorNote = parts[0];
-        try {
-          parsedPocs = JSON.parse(parts[1]);
-        } catch (e) {
-          console.error("Failed to parse POC data", e);
-        }
-      }
-
-      if (parsedPocs.length === 0) {
-        if (vendor.Ticker_Symbol || vendor.Fax) {
-          parsedPocs.push({
-            id: Math.random().toString(),
-            name: vendor.Ticker_Symbol || '',
-            phone: vendor.Fax || '',
-            note: ''
-          });
-        } else {
-          parsedPocs.push({ id: Math.random().toString(), name: '', phone: '', note: '' });
-        }
-      }
-
-      setNotes(vendorNote);
+      setNotes(loaded.notes);
       setStatus(vendor.Rating || '');
-      setPocs(parsedPocs);
+      setPocs(loaded.pocs);
       setAccountName(vendor.Account_Name || '');
       setBillingCity(vendor.Billing_City || '');
       setBillingState(vendor.Billing_State || '');
@@ -110,7 +85,7 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
     }
   }, [vendor]);
 
-  const updatePoc = (index: number, field: keyof POC, value: string) => {
+  const updatePoc = (index: number, field: keyof VendorPoc, value: string) => {
     const newPocs = [...pocs];
     newPocs[index] = { ...newPocs[index], [field]: value };
     setPocs(newPocs);
@@ -140,14 +115,16 @@ export default function VendorEditPanel({ vendor, isOpen, onClose }: VendorEditP
   });
 
   const handleSave = () => {
+    // Blank rows stay on screen so a contact can be typed, but they are not written.
+    const contact = buildVendorContactWrite(notes, pocs);
     updateMutation.mutate({ 
       Industry: trade, 
       Phone: phone, 
       Account_Site: email, 
-      Description: pocs.length > 0 ? notes + '\n---POC_DATA---\n' + JSON.stringify(pocs) : notes,
+      Description: contact.Description,
       Rating: status,
-      Ticker_Symbol: pocs[0]?.name || '',
-      Fax: pocs[0]?.phone || '',
+      Ticker_Symbol: contact.Ticker_Symbol,
+      Fax: contact.Fax,
       Account_Name: accountName,
       Billing_City: billingCity,
       Billing_State: billingState,
