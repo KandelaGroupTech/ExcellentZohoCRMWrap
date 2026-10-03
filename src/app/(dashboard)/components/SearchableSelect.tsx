@@ -82,7 +82,7 @@ export default function SearchableSelect({
                 className="px-3 py-2 text-sm cursor-pointer rounded-md hover:bg-gray-100 text-brand-red font-medium"
                 onClick={() => { onChange(search.trim()); setIsOpen(false); }}
               >
-                Create "{search.trim()}"
+                Create &quot;{search.trim()}&quot;
               </div>
             )}
             {!showCreate && filtered.length === 0 && (

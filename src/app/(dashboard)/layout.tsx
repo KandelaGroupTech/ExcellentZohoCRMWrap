@@ -4,7 +4,7 @@ import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import { LayoutDashboard, Users, Contact, Building, Menu, X, Store, Columns } from "lucide-react";
+import { LayoutDashboard, Users, Contact, Building, Store, Columns, Hourglass, CircleDollarSign } from "lucide-react";
 import HeaderActions from "./components/HeaderActions";
 import PullToRefresh from "./components/PullToRefresh";
 import { CallLoggerProvider } from "./components/CallLoggerProvider";
@@ -17,12 +17,16 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Pipeline", href: "/dashboard/pipeline", icon: Columns },
-    { name: "Leads", href: "/dashboard/leads", icon: Users },
-    { name: "Contacts", href: "/dashboard/contacts", icon: Contact },
-    { name: "Accounts", href: "/dashboard/accounts", icon: Building },
-    { name: "Vendors", href: "/dashboard/vendors", icon: Store },
+    { name: "Dashboard", shortName: "Home", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Pipeline", shortName: "Pipeline", href: "/dashboard/pipeline", icon: Columns },
+    { name: "Leads", shortName: "Leads", href: "/dashboard/leads", icon: Users },
+    { name: "Contacts", shortName: "Contacts", href: "/dashboard/contacts", icon: Contact },
+    { name: "Accounts", shortName: "Accounts", href: "/dashboard/accounts", icon: Building },
+    { name: "Vendors", shortName: "Vendors", href: "/dashboard/vendors", icon: Store },
+  ];
+  const reportNavigation = [
+    { name: "Aging deals", shortName: "Aging", href: "/dashboard/reports/aging", icon: Hourglass },
+    { name: "Revenue by account", shortName: "Revenue", href: "/dashboard/reports/revenue-by-account", icon: CircleDollarSign },
   ];
 
   return (
@@ -35,7 +39,7 @@ export default function DashboardLayout({
           <img src="/website-demos/excellentzohocrm/icon.png" alt="Logo" className="w-6 h-6 mr-3 rounded" />
           Journey Office Builders
         </Link>
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -53,6 +57,26 @@ export default function DashboardLayout({
               </Link>
             );
           })}
+          <div className="pt-4 mt-4 border-t border-gray-800 space-y-1">
+            <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500">Reports</p>
+            {reportNavigation.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md ${
+                    isActive
+                      ? 'bg-brand-red text-white'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
         <div className="p-4 border-t border-gray-800 flex items-center gap-3">
           <OrganizationSwitcher 
@@ -88,24 +112,25 @@ export default function DashboardLayout({
         </PullToRefresh>
 
         {/* Bottom Navigation Bar for Mobile */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-brand-black border-t border-gray-800 z-40 flex items-center justify-around px-2 pb-safe">
-          {navigation.map((item) => {
+        <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-brand-black border-t border-gray-800 z-40 overflow-x-auto">
+          <div className="flex items-stretch h-full min-w-max px-1">
+          {[...navigation, ...reportNavigation].map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex flex-col items-center justify-center flex-1 h-full space-y-1 ${
+                className={`flex flex-col items-center justify-center w-16 h-full space-y-1 ${
                   isActive ? 'text-brand-red' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <item.icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium leading-none">{item.name}</span>
+                <span className="text-[10px] font-medium leading-none">{item.shortName}</span>
               </Link>
             );
           })}
           {/* Account / Sign Out tab */}
-          <div className="flex flex-col items-center justify-center flex-1 h-full space-y-1 text-gray-400">
+          <div className="flex flex-col items-center justify-center w-16 h-full space-y-1 text-gray-400">
             <UserButton
               afterSignOutUrl="/"
               appearance={{
@@ -115,6 +140,7 @@ export default function DashboardLayout({
               }}
             />
             <span className="text-[10px] font-medium leading-none">Account</span>
+          </div>
           </div>
         </div>
 
