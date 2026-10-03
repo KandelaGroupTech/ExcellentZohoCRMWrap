@@ -22,6 +22,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const isAdmin = orgRole === 'org:admin';
   const queryClient = useQueryClient();
   const [newTaskSubject, setNewTaskSubject] = useState('');
+  const [newTaskDate, setNewTaskDate] = useState('');
   const { user } = useUser();
   const { registerCallClick } = useCallLogger();
   const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
@@ -358,11 +359,11 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   };
 
   const createTaskMutation = useMutation({
-    mutationFn: async (subject: string) => {
+    mutationFn: async ({ subject, dueDate }: { subject: string, dueDate: string }) => {
       const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/tasks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ Subject: subject })
+        body: JSON.stringify({ Subject: subject, Due_Date: dueDate })
       });
       if (!res.ok) throw new Error('Failed to create task');
       return res.json();
@@ -371,6 +372,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
       queryClient.invalidateQueries({ queryKey: ['tasks', deal?.id] });
       queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
       setNewTaskSubject('');
+      setNewTaskDate('');
       toast.success('Task created successfully');
     },
     onError: () => {
@@ -670,7 +672,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                 e.preventDefault();
                 if (newTaskSubject.trim()) {
                   const subjectWithInitials = initials ? `${newTaskSubject.trim()} - ${initials}` : newTaskSubject.trim();
-                  createTaskMutation.mutate(subjectWithInitials);
+                  createTaskMutation.mutate({ subject: subjectWithInitials, dueDate: newTaskDate });
                 }
               }}
             >

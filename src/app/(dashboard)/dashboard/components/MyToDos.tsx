@@ -62,6 +62,16 @@ export default function MyToDos() {
     return acc;
   }, {});
 
+  // Sort tasks within each group chronologically
+  Object.keys(groupedTasks).forEach(group => {
+    groupedTasks[group].sort((a: any, b: any) => {
+      if (!a.Due_Date && !b.Due_Date) return 0;
+      if (!a.Due_Date) return 1;
+      if (!b.Due_Date) return -1;
+      return new Date(a.Due_Date).getTime() - new Date(b.Due_Date).getTime();
+    });
+  });
+
   const groupKeys = Object.keys(groupedTasks).sort((a, b) => {
     if (a === 'General / No Project') return 1;
     if (b === 'General / No Project') return -1;
@@ -109,6 +119,18 @@ export default function MyToDos() {
                         <p className="text-sm font-medium text-gray-900 break-words">
                           {task.Subject}
                         </p>
+                        {task.Due_Date && (
+                          <div className={`mt-1 flex items-center gap-1 text-xs font-medium ${
+                            new Date(task.Due_Date) < new Date(new Date().setHours(0,0,0,0)) 
+                              ? 'text-red-600' 
+                              : new Date(task.Due_Date).toDateString() === new Date().toDateString()
+                                ? 'text-orange-500'
+                                : 'text-gray-500'
+                          }`}>
+                            <Calendar className="w-3.5 h-3.5" />
+                            {new Date(task.Due_Date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: new Date(task.Due_Date).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined })}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </SwipeableCard>
