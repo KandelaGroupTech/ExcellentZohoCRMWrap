@@ -1,23 +1,24 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, CheckCircle2 } from 'lucide-react';
 
 interface SwipeableCardProps {
   children: React.ReactNode;
   onEdit?: () => void;
   onDelete?: () => void;
+  onComplete?: () => void;
   onClick?: () => void;
 }
 
-export default function SwipeableCard({ children, onEdit, onDelete, onClick }: SwipeableCardProps) {
+export default function SwipeableCard({ children, onEdit, onDelete, onComplete, onClick }: SwipeableCardProps) {
   const [offset, setOffset] = useState(0);
   const startXRef = useRef<number>(0);
   const currentXRef = useRef<number>(0);
   const isDraggingRef = useRef(false);
   
   // Calculate how many action buttons we have to determine max swipe distance
-  const actionCount = (onEdit ? 1 : 0) + (onDelete ? 1 : 0);
+  const actionCount = (onEdit ? 1 : 0) + (onDelete ? 1 : 0) + (onComplete ? 1 : 0);
   const MAX_SWIPE = actionCount * 80; // 80px per button
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -56,6 +57,18 @@ export default function SwipeableCard({ children, onEdit, onDelete, onClick }: S
       
       {/* Background Actions (Hidden underneath) */}
       <div className="absolute inset-y-0 right-0 flex items-center justify-end z-0">
+                {onComplete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOffset(0);
+              onComplete();
+            }}
+            className="flex items-center justify-center w-[80px] h-full bg-green-500 text-white hover:bg-green-600 transition-colors"
+          >
+            <CheckCircle2 className="h-5 w-5" />
+          </button>
+        )}
         {onEdit && (
           <button
             onClick={(e) => {
