@@ -667,7 +667,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
           {/* New Task Form */}
           {isAdmin && (
             <form 
-              className="mt-4 flex gap-2" 
+              className="mt-4 flex flex-col sm:flex-row gap-2" 
               onSubmit={(e) => {
                 e.preventDefault();
                 if (newTaskSubject.trim()) {
@@ -677,19 +677,27 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
               }}
             >
               <input 
-                type="text" 
-                value={newTaskSubject}
-                onChange={(e) => setNewTaskSubject(e.target.value)}
-                placeholder="Add a new follow-up..." 
-                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
-              />
-              <button 
-                type="submit" 
-                disabled={createTaskMutation.isPending || !newTaskSubject.trim()}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90 disabled:opacity-50"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
+                  type="text" 
+                  value={newTaskSubject}
+                  onChange={(e) => setNewTaskSubject(e.target.value)}
+                  placeholder="Add a new follow-up..." 
+                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={newTaskDate}
+                    onChange={(e) => setNewTaskDate(e.target.value)}
+                    className="block w-full sm:w-36 px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={createTaskMutation.isPending || !newTaskSubject.trim()}
+                    className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90 disabled:opacity-50 h-[38px] w-[38px] shrink-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
             </form>
           )}
 
