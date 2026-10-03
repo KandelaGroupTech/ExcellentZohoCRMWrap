@@ -486,6 +486,16 @@ export default function VendorsPage() {
       </div>
 
       <CreateVendorModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {/* Mobile FAB */}
+      {isAdmin && (
+        <button 
+          onClick={() => setIsModalOpen(true)} 
+          className="md:hidden fixed bottom-20 right-4 z-50 h-14 w-14 bg-brand-red text-white rounded-full shadow-lg flex items-center justify-center hover:bg-brand-red/90 active:scale-95 transition-transform"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
+
 
       <VendorEditPanel
         vendor={editingVendor}
