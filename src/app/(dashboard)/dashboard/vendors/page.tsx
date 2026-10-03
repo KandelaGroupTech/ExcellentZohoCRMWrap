@@ -1,5 +1,6 @@
 'use client';
 import { formatPhoneNumber } from '@/lib/utils';
+import { vendorNotesText } from '@/lib/vendorPoc';
 
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -362,7 +363,7 @@ export default function VendorsPage() {
                           ) : '—'}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
-                          <span className="line-clamp-2">{(vendor.Description || '').split('\n---POC_DATA---\n')[0] || '—'}</span>
+                          <span className="line-clamp-2">{vendorNotesText(vendor.Description) || '—'}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                           <div className="flex justify-end pr-2">
