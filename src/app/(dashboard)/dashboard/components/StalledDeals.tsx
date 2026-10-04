@@ -91,7 +91,7 @@ export default function StalledDeals() {
               return (
                 <Link 
                   key={deal.id} 
-                  href={`/dashboard/pipeline?q=${encodeURIComponent(deal.Deal_Name)}`}
+                  href={`/dashboard/pipeline?deal=${deal.id}`}
                   className="block p-3 rounded-lg hover:bg-amber-50/50 transition-colors border border-transparent hover:border-amber-100 group"
                 >
                   <div className="flex justify-between items-start mb-1">

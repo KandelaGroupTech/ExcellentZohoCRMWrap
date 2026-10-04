@@ -37,6 +37,7 @@ export default function KanbanBoard() {
   const isAdmin = orgRole === 'org:admin';
   const [selectedDeal, setSelectedDeal] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useUrlState('q', '');
+  const [dealParam, setDealParam] = useUrlState('deal', '');
   const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
   const touchDragDealId = useRef<string | null>(null);
@@ -68,6 +69,19 @@ export default function KanbanBoard() {
       return res.json();
     }
   });
+
+  // Auto-open a deal when arriving via ?deal=<id> (e.g. from the dashboard)
+  useEffect(() => {
+    if (!dealParam || !Array.isArray(deals)) return;
+    const match = deals.find((d: any) => d.id === dealParam);
+    if (match) {
+      setSelectedDeal(match);
+    } else {
+      toast.error('That project could not be found.');
+      setDealParam('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dealParam, deals]);
 
   const { data: allTasks } = useQuery({
     queryKey: ['all-tasks'],
@@ -457,7 +471,7 @@ export default function KanbanBoard() {
       <DealDetailModal 
         deal={selectedDeal} 
         isOpen={!!selectedDeal} 
-        onClose={() => setSelectedDeal(null)} 
+        onClose={() => { setSelectedDeal(null); setDealParam(''); }} 
         stages={STAGES}
         onUpdateStage={(dealId, stage) => {
           updateStageMutation.mutate({ dealId, stage });

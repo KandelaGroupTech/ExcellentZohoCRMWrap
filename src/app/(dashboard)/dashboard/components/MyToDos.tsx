@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Circle, Loader2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SwipeableCard from '../../components/SwipeableCard';
+import Link from 'next/link';
 
 export default function MyToDos() {
   const queryClient = useQueryClient();
@@ -49,6 +50,9 @@ export default function MyToDos() {
   // Filter out completed tasks and group by Project (Deal)
   const openTasks = allTasks?.filter((t: any) => t.Status !== 'Completed') || [];
   
+  // Map group name -> deal id (only for tasks linked to a Deal)
+  const groupDealIds: Record<string, string> = {};
+
   const groupedTasks = openTasks.reduce((acc: any, task: any) => {
     let groupName = 'General / No Project';
     if (task.SEMODULE_ID && task.SE_Module === 'Deals' && task.What_Id?.name) {
@@ -57,6 +61,10 @@ export default function MyToDos() {
       groupName = task.What_Id.name;
     } else if (task.Who_Id?.name) { groupName = task.Who_Id.name; }
     
+    if (task.What_Id?.id && task.What_Id?.name === groupName && (!task.SE_Module || task.SE_Module === 'Deals')) {
+      groupDealIds[groupName] = task.What_Id.id;
+    }
+
     if (!acc[groupName]) acc[groupName] = [];
     acc[groupName].push(task);
     return acc;
@@ -100,7 +108,17 @@ export default function MyToDos() {
           groupKeys.map(group => (
             <div key={group} className="space-y-1">
               <h4 className="text-xs font-semibold text-brand-red uppercase tracking-wider sticky top-0 bg-white py-1 z-10">
-                {group}
+                {groupDealIds[group] ? (
+                  <Link
+                    href={`/dashboard/pipeline?deal=${groupDealIds[group]}`}
+                    className="hover:underline underline-offset-2"
+                    title="Open project"
+                  >
+                    {group}
+                  </Link>
+                ) : (
+                  group
+                )}
               </h4>
               <div className="space-y-0.5">
                 {groupedTasks[group].map((task: any) => (
