@@ -352,7 +352,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
       if (newOwner) {
         newDesc = baseDesc + '\n---DEAL_META---\n' + JSON.stringify({ owner: newOwner });
       }
-      const res = await fetch(/website-demos/excellentzohocrm/api/deals, {
+      const res = await fetch('/website-demos/excellentzohocrm/api/deals', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dealId: deal.id, description: newDesc })

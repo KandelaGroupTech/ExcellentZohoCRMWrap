@@ -33,7 +33,7 @@ export default function RecentActivity() {
   }
 
   // Combine and format activity
-  const activities = [];
+  const activities: any[] = [];
 
   if (deals) {
     deals.forEach((deal: any) => {
