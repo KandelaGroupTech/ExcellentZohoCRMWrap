@@ -37,7 +37,7 @@ export async function PUT(req: Request) {
     }
   }
 
-  if (!isAdmin) return NextResponse.json({ error: \Forbidden: Admins only.\ }, { status: 403 });
+  if (!isAdmin) return NextResponse.json({ error: 'Forbidden: Admins only.' }, { status: 403 });
 
   try {
     const body = await req.json();
