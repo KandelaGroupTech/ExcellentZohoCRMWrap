@@ -37,8 +37,8 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
   const [newNoteContent, setNewNoteContent] = useState('');
   const [logAsInitials, setLogAsInitials] = useState('');
-  import { useEffect } from 'react';
-  useEffect(() => { if (initials && !logAsInitials) setLogAsInitials(initials); }, [initials]);
+
+  React.useEffect(() => { if (initials && !logAsInitials) setLogAsInitials(initials); }, [initials]);
   const [editingAmount, setEditingAmount] = useState(false);
   const [editAmountValue, setEditAmountValue] = useState('');
   const [editingAccount, setEditingAccount] = useState(false);
