@@ -164,11 +164,11 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   });
 
   const createNoteMutation = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async ({ content, logAs }: { content: string, logAs: string }) => {
       const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, initials })
+        body: JSON.stringify({ content, initials: logAs })
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
