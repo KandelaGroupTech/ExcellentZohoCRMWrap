@@ -336,6 +336,36 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
     updateAmountMutation.mutate(parsed);
   };
 
+  
+  let currentOwner = null;
+  if (deal?.Description) {
+    const match = deal.Description.match(/---DEAL_META---\\n(.*)/);
+    if (match) {
+      try { currentOwner = JSON.parse(match[1]).owner; } catch(e) {}
+    }
+  }
+
+  const claimDealMutation = useMutation({
+    mutationFn: async (newOwner: string | null) => {
+      let baseDesc = (deal.Description || '').replace(/\n---DEAL_META---\\n.*/, '');
+      let newDesc = baseDesc;
+      if (newOwner) {
+        newDesc = baseDesc + '\n---DEAL_META---\n' + JSON.stringify({ owner: newOwner });
+      }
+      const res = await fetch(/website-demos/excellentzohocrm/api/deals, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealId: deal.id, description: newDesc })
+      });
+      if (!res.ok) throw new Error('Failed to update deal owner');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+    },
+    onError: () => toast.error('Failed to update project owner')
+  });
+
   const updateNameMutation = useMutation({
     mutationFn: async (name: string) => {
       const res = await fetch(`/website-demos/excellentzohocrm/api/deals/${deal.id}`, {
@@ -637,7 +667,33 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                 )}
               </div>
             )}
+          
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            <span className="text-sm text-gray-500 font-medium">Project Owner</span>
+            {currentOwner ? (
+              <div className="flex items-center gap-2">
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">
+                  {currentOwner}
+                </span>
+                <button 
+                  onClick={() => claimDealMutation.mutate(null)}
+                  disabled={claimDealMutation.isPending}
+                  className="text-[10px] text-gray-400 hover:text-red-500 underline"
+                >
+                  Clear
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => claimDealMutation.mutate(initials)}
+                disabled={claimDealMutation.isPending || !initials}
+                className="text-xs font-semibold text-brand-red hover:bg-brand-red/10 px-2 py-1 rounded transition-colors"
+              >
+                + Claim Project
+              </button>
+            )}
           </div>
+        </div>
         </div>
 
         {/* Tasks Section */}

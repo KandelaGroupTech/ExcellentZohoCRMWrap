@@ -162,6 +162,22 @@ export default function KanbanBoard() {
     return dealName.includes(lowerQuery) || accountName.includes(lowerQuery);
   }) || [];
 
+  
+  // Parse owners from description
+  const processedDeals = (deals || []).map((deal: any) => {
+    let owner = null;
+    if (deal.Description) {
+      const match = deal.Description.match(/---DEAL_META---\\n(.*)/);
+      if (match) {
+        try {
+          const meta = JSON.parse(match[1]);
+          owner = meta.owner;
+        } catch(e) {}
+      }
+    }
+    return { ...deal, _owner: owner };
+  });
+
   const dealsByStage = STAGES.reduce((acc, stage) => {
     acc[stage] = filteredDeals.filter((d: any) => d.Stage === stage);
     return acc;
@@ -326,6 +342,7 @@ export default function KanbanBoard() {
                           <div className="flex items-center space-x-2">
   <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
   {deal._has_attachments && <Paperclip className="w-3.5 h-3.5 text-gray-400" />}
+  {deal._owner && <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">{deal._owner}</span>}
 </div>
                           {outstandingTasks > 0 && (
                             <div className="flex items-center bg-brand-red/10 text-brand-red px-1.5 py-0.5 rounded text-[10px] font-bold">
@@ -437,6 +454,7 @@ export default function KanbanBoard() {
                       <div className="flex items-center space-x-2">
   <span className="text-sm font-semibold text-gray-900">{formatCurrency(deal.Amount)}</span>
   {deal._has_attachments && <Paperclip className="w-3.5 h-3.5 text-gray-400" />}
+  {deal._owner && <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded ml-1">{deal._owner}</span>}
 </div>
                       {outstandingTasks > 0 && (
                         <div className="flex items-center bg-brand-red/10 text-brand-red px-2 py-0.5 rounded text-xs font-bold" title={`${outstandingTasks} outstanding to-do${outstandingTasks > 1 ? 's' : ''}`}>

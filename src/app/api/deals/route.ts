@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { fetchDeals, updateDealStage } from '@/lib/zoho';
+import { fetchDeals, updateDealStage, updateDeal } from '@/lib/zoho';
 
 export async function GET() {
   const { userId } = auth();
@@ -20,7 +20,6 @@ export async function GET() {
   }
 }
 
-
 export async function PUT(req: Request) {
   const authData = auth();
   const { userId, orgRole } = authData;
@@ -28,7 +27,6 @@ export async function PUT(req: Request) {
 
   let isAdmin = orgRole === 'org:admin';
 
-  // Fallback: if orgRole is null (which happens with some proxy setups), check Clerk API directly
   if (!isAdmin) {
     try {
       const client = await clerkClient();
@@ -39,16 +37,24 @@ export async function PUT(req: Request) {
     }
   }
 
-  if (!isAdmin) return NextResponse.json({ error: `Forbidden: Admins only. Debug: ${JSON.stringify(authData)}` }, { status: 403 });
+  if (!isAdmin) return NextResponse.json({ error: \Forbidden: Admins only.\ }, { status: 403 });
 
   try {
-    const { dealId, stage } = await req.json();
-    if (!dealId || !stage) {
-      return NextResponse.json({ error: 'Missing dealId or stage' }, { status: 400 });
+    const body = await req.json();
+    const { dealId, stage, description } = body;
+    if (!dealId) {
+      return NextResponse.json({ error: 'Missing dealId' }, { status: 400 });
     }
 
-    const result = await updateDealStage(dealId, stage);
-    return NextResponse.json(result);
+    if (description !== undefined) {
+      const result = await updateDeal(dealId, { Description: description });
+      return NextResponse.json(result);
+    } else if (stage) {
+      const result = await updateDealStage(dealId, stage);
+      return NextResponse.json(result);
+    }
+    
+    return NextResponse.json({ error: 'No valid update fields provided' }, { status: 400 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -73,7 +79,6 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json();
-    // Use an imported createDeal function
     const { createDeal } = await import('@/lib/zoho');
     const result = await createDeal(data);
     return NextResponse.json(result);
