@@ -36,6 +36,9 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
 
   const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
   const [newNoteContent, setNewNoteContent] = useState('');
+  const [logAsInitials, setLogAsInitials] = useState('');
+  import { useEffect } from 'react';
+  useEffect(() => { if (initials && !logAsInitials) setLogAsInitials(initials); }, [initials]);
   const [editingAmount, setEditingAmount] = useState(false);
   const [editAmountValue, setEditAmountValue] = useState('');
   const [editingAccount, setEditingAccount] = useState(false);
@@ -736,7 +739,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
               onSubmit={(e) => {
                 e.preventDefault();
                 if (newTaskSubject.trim()) {
-                  const subjectWithInitials = initials ? `${newTaskSubject.trim()} - ${initials}` : newTaskSubject.trim();
+                  const subjectWithInitials = logAsInitials ? `${newTaskSubject.trim()} - ${logAsInitials}` : newTaskSubject.trim();
                   createTaskMutation.mutate({ subject: subjectWithInitials, dueDate: newTaskDate });
                 }
               }}
@@ -899,13 +902,26 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                   rows={2}
                   className="block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red resize-none bg-white text-gray-900"
                 />
-                <button 
-                  type="submit" 
-                  disabled={createNoteMutation.isPending || !newNoteContent.trim()}
-                  className="self-end inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90 disabled:opacity-50"
-                >
-                  {createNoteMutation.isPending ? 'Saving...' : 'Save Note'}
-                </button>
+                <div className="flex items-center justify-end gap-3 w-full">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md shrink-0">
+                    <span className="text-xs text-gray-500 font-medium whitespace-nowrap">Log as:</span>
+                    <input 
+                      type="text" 
+                      maxLength={3}
+                      value={logAsInitials}
+                      onChange={(e) => setLogAsInitials(e.target.value.toUpperCase())}
+                      className="w-8 bg-transparent text-xs font-bold text-gray-900 border-none p-0 focus:ring-0 text-center"
+                      placeholder="??"
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={createNoteMutation.isPending || !newNoteContent.trim()}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90 disabled:opacity-50"
+                  >
+                    {createNoteMutation.isPending ? 'Saving...' : 'Save Note'}
+                  </button>
+                </div>
               </form>
             )}
           </div>
