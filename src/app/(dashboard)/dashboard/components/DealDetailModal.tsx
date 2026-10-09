@@ -889,7 +889,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                 className="flex flex-col gap-2"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (newNoteContent.trim()) createNoteMutation.mutate(newNoteContent);
+                  if (newNoteContent.trim()) createNoteMutation.mutate({ content: newNoteContent, logAs: logAsInitials });
                 }}
               >
                 <textarea
