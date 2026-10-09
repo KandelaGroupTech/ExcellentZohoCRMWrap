@@ -3,7 +3,12 @@ import { SignIn } from "@clerk/nextjs";
 export default function Page() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" forceRedirectUrl="/dashboard" />
+      <SignIn 
+        routing="path" 
+        path="/website-demos/excellentzohocrm/sign-in" 
+        signUpUrl="/website-demos/excellentzohocrm/sign-up" 
+        forceRedirectUrl="/website-demos/excellentzohocrm/dashboard" 
+      />
     </div>
   );
 }
