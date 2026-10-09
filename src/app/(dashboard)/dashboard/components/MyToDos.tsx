@@ -1,13 +1,19 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Circle, Loader2, Calendar } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, Calendar, Users, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SwipeableCard from '../../components/SwipeableCard';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
+import { useState } from 'react';
 
 export default function MyToDos() {
   const queryClient = useQueryClient();
+  const { user } = useUser();
+  const [viewMode, setViewMode] = useState<"me" | "team">("team");
+  
+  const myInitials = user ? `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}`.toUpperCase() : "";
 
   const { data: allTasks, isLoading } = useQuery({
     queryKey: ['all-tasks'],
@@ -30,16 +36,12 @@ export default function MyToDos() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
-      // We might also need to invalidate tasks for specific deals, but invalidateQueries does partial matching? No.
-      // But we can just rely on the all-tasks query for now.
     },
     onError: () => {
       toast.error('Failed to update task');
     }
   });
 
-  if (isLoading) {
-    
   const renderSubject = (subject: string) => {
     const match = subject.match(/ - ([A-Z]{2})$/);
     if (match) {
@@ -51,7 +53,8 @@ export default function MyToDos() {
     return { text: subject, initials: null };
   };
 
-  return (
+  if (isLoading) {
+    return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center justify-center min-h-[300px]">
         <Loader2 className="w-8 h-8 animate-spin text-brand-red mb-4" />
         <p className="text-sm text-gray-500">Loading your to-dos...</p>
@@ -60,7 +63,11 @@ export default function MyToDos() {
   }
 
   // Filter out completed tasks and group by Project (Deal)
-  const openTasks = allTasks?.filter((t: any) => t.Status !== 'Completed') || [];
+  const allOpenTasks = allTasks?.filter((t: any) => t.Status !== 'Completed') || [];
+  
+  const openTasks = viewMode === 'team' 
+    ? allOpenTasks 
+    : allOpenTasks.filter((t: any) => renderSubject(t.Subject).initials === myInitials);
   
   // Map group name -> deal id (only for tasks linked to a Deal)
   const groupDealIds: Record<string, string> = {};
@@ -101,10 +108,33 @@ export default function MyToDos() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full max-h-[800px]">
       <div className="p-4 md:p-6 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900">My To-Dos</h3>
-        <span className="bg-brand-red text-white text-xs font-bold px-2.5 py-1 rounded-full">
-          {openTasks.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <h3 className="text-lg font-bold text-gray-900">My To-Dos</h3>
+          <span className="bg-brand-red text-white text-xs font-bold px-2.5 py-1 rounded-full">
+            {openTasks.length}
+          </span>
+        </div>
+        
+        <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('me')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              viewMode === 'me' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            Mine
+          </button>
+          <button
+            onClick={() => setViewMode('team')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              viewMode === 'team' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            Team
+          </button>
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar">

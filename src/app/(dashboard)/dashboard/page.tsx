@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import MyToDos from './components/MyToDos';
 import PipelineSnapshot from './components/PipelineSnapshot';
 import StalledDeals from './components/StalledDeals';
+import RecentActivity from './components/RecentActivity';
 
 export default function DashboardHome() {
   const { orgRole } = useAuth();
@@ -19,6 +20,7 @@ export default function DashboardHome() {
         {/* Left Column: Actionable items like To-Dos */}
         <div className="flex flex-col gap-6">
           <MyToDos />
+          <RecentActivity />
         </div>
         
         {/* Right Column: Summaries, Reports, Recent Activity */}
