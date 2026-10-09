@@ -39,7 +39,19 @@ export default function MyToDos() {
   });
 
   if (isLoading) {
-    return (
+    
+  const renderSubject = (subject: string) => {
+    const match = subject.match(/ - ([A-Z]{2})$/);
+    if (match) {
+      return {
+        text: subject.replace(match[0], ''),
+        initials: match[1]
+      };
+    }
+    return { text: subject, initials: null };
+  };
+
+  return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center justify-center min-h-[300px]">
         <Loader2 className="w-8 h-8 animate-spin text-brand-red mb-4" />
         <p className="text-sm text-gray-500">Loading your to-dos...</p>
@@ -134,9 +146,16 @@ export default function MyToDos() {
                         <Circle className="w-5 h-5" />
                       </button>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 break-words">
-                          {task.Subject}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-gray-900 break-words flex-1">
+                            {renderSubject(task.Subject).text}
+                          </p>
+                          {renderSubject(task.Subject).initials && (
+                            <span className="shrink-0 bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-gray-200">
+                              {renderSubject(task.Subject).initials}
+                            </span>
+                          )}
+                        </div>
                         {task.Due_Date && (
                           <div className={`mt-1 flex items-center gap-1 text-xs font-medium ${
                             new Date(task.Due_Date) < new Date(new Date().setHours(0,0,0,0)) 

@@ -25,6 +25,15 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const [newTaskDate, setNewTaskDate] = useState('');
   const { user } = useUser();
   const { registerCallClick } = useCallLogger();
+  
+  const renderSubject = (subject: string) => {
+    const match = subject.match(/ - ([A-Z]{2})$/);
+    if (match) {
+      return { text: subject.replace(match[0], ''), initials: match[1] };
+    }
+    return { text: subject, initials: null };
+  };
+
   const initials = user ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() : '';
   const [newNoteContent, setNewNoteContent] = useState('');
   const [editingAmount, setEditingAmount] = useState(false);
