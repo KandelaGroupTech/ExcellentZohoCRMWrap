@@ -510,7 +510,13 @@ export async function updateDealStage(dealId: string, stage: string) {
       'Authorization': `Zoho-oauthtoken ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ data: [{ id: dealId, Stage: stage }] })
+    body: JSON.stringify({ 
+        data: [{ 
+          id: dealId, 
+          Stage: stage,
+          ...(stage === 'Closed Won' ? { Closing_Date: new Date().toISOString().split('T')[0] } : {})
+        }] 
+      })
   });
 
   const responseData = await response.json();
