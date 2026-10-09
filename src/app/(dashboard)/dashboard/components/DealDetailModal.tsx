@@ -342,7 +342,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   
   let currentOwner = null;
   if (deal?.Description) {
-    const match = deal.Description.match(/---DEAL_META---\\n(.*)/);
+    const match = deal.Description.match(/---DEAL_META---\n(.*)
     if (match) {
       try { currentOwner = JSON.parse(match[1]).owner; } catch(e) {}
     }
@@ -350,7 +350,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
 
   const claimDealMutation = useMutation({
     mutationFn: async (newOwner: string | null) => {
-      let baseDesc = (deal.Description || '').replace(/\n---DEAL_META---\\n.*/, '');
+      let baseDesc = (deal.Description || '').replace(/\n---DEAL_META---\n(.*)
       let newDesc = baseDesc;
       if (newOwner) {
         newDesc = baseDesc + '\n---DEAL_META---\n' + JSON.stringify({ owner: newOwner });

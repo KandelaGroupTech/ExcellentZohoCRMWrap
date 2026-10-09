@@ -167,7 +167,7 @@ export default function KanbanBoard() {
   const processedDeals = (deals || []).map((deal: any) => {
     let owner = null;
     if (deal.Description) {
-      const match = deal.Description.match(/---DEAL_META---\\n(.*)/);
+      const match = deal.Description.match(/---DEAL_META---\n(.*)
       if (match) {
         try {
           const meta = JSON.parse(match[1]);
