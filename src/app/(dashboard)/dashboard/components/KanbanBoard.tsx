@@ -167,13 +167,11 @@ export default function KanbanBoard() {
   const processedDeals = (deals || []).map((deal: any) => {
     let owner = null;
     if (deal.Description) {
-      const match = deal.Description.match(/---DEAL_META---\\n(.*)/);
-      if (match) {
-        try {
-          const meta = JSON.parse(match[1]);
-          owner = meta.owner;
-        } catch(e) {}
-      }
+      if (deal.Description.includes('---DEAL_META---')) {
+          const parts = deal.Description.split('---DEAL_META---');
+          const metaStr = parts[parts.length - 1].trim();
+          try { owner = JSON.parse(metaStr).owner; } catch(e) {}
+        }
     }
     return { ...deal, _owner: owner };
   });

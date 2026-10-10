@@ -342,15 +342,16 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   
   let currentOwner = null;
   if (deal?.Description) {
-    const match = deal.Description.match(/---DEAL_META---\\n(.*)/);
-    if (match) {
-      try { currentOwner = JSON.parse(match[1]).owner; } catch(e) {}
+    if (deal.Description.includes('---DEAL_META---')) {
+      const parts = deal.Description.split('---DEAL_META---');
+      const metaStr = parts[parts.length - 1].trim();
+      try { currentOwner = JSON.parse(metaStr).owner; } catch(e) {}
     }
   }
 
   const claimDealMutation = useMutation({
     mutationFn: async (newOwner: string | null) => {
-      let baseDesc = (deal.Description || '').replace(/\\n---DEAL_META---\\n(.*)/, "");
+      let baseDesc = (deal.Description || '').split('\n---DEAL_META---')[0];
       let newDesc = baseDesc;
       if (newOwner) {
         newDesc = baseDesc + '\n---DEAL_META---\n' + JSON.stringify({ owner: newOwner });
