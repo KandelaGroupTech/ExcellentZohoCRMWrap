@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test:vendor-pocs": "tsx --test src/lib/vendorPoc.test.ts",
-    "cleanup:blank-vendor-pocs": "tsx scripts/cleanup-blank-vendor-pocs.ts"
+    "test:vendor-notion-sync": "tsx --test src/lib/vendorNotionSync.test.ts",
+    "cleanup:blank-vendor-pocs": "tsx scripts/cleanup-blank-vendor-pocs.ts",
+    "sync:vendors-notion": "tsx scripts/sync-vendors-notion.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.7.6",
