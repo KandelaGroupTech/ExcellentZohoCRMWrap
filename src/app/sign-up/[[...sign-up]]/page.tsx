@@ -7,7 +7,7 @@ export default function Page() {
         routing="path" 
         path="/website-demos/excellentzohocrm/sign-up" 
         signInUrl="/website-demos/excellentzohocrm/sign-in" 
-        forceRedirectUrl="/website-demos/excellentzohocrm/dashboard" 
+        forceRedirectUrl="https://portal.excellentjob.com/website-demos/excellentzohocrm/dashboard" 
       />
     </div>
   );
