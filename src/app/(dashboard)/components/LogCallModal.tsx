@@ -3,11 +3,12 @@
 import { useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 
 export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [selectedContactId, setSelectedContactId] = useState<string>('');
+  const [contactSearch, setContactSearch] = useState('');
   const [notes, setNotes] = useState('');
 
   const queryClient = useQueryClient();
@@ -24,6 +25,18 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
     },
     enabled: isOpen
   });
+
+  const filteredContacts = useMemo(() => {
+    if (!contactSearch.trim()) return contacts;
+    const q = contactSearch.toLowerCase();
+    return contacts.filter((c: any) => {
+      const name = `${c.First_Name || ''} ${c.Last_Name || ''}`.toLowerCase();
+      const acct = (typeof c.Account_Name === 'object' ? c.Account_Name?.name : c.Account_Name || '').toLowerCase();
+      const phone = (c.Phone || '').toLowerCase();
+      const email = (c.Email || '').toLowerCase();
+      return name.includes(q) || acct.includes(q) || phone.includes(q) || email.includes(q);
+    });
+  }, [contacts, contactSearch]);
 
   const createMutation = useMutation({
     mutationFn: async (result: string) => {
@@ -55,6 +68,7 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
     onSuccess: () => {
       onClose();
       setSelectedContactId('');
+      setContactSearch('');
       setNotes('');
       toast.success('Call logged successfully!');
       // Optionally invalidate contacts if you want recent activity to update
@@ -77,20 +91,39 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div 
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm" 
+        onClick={() => {
+          setContactSearch('');
+          onClose();
+        }} 
+      />
       <div className="relative w-full max-w-sm bg-gray-50 rounded-xl shadow-2xl p-5 animate-in fade-in zoom-in duration-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Log a Call</h3>
         
         <div className="mb-4">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Select Contact</label>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Search & Select Contact</label>
+          <div className="relative mb-2">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={contactSearch}
+              onChange={(e) => setContactSearch(e.target.value)}
+              placeholder="Search by name, company, or phone..."
+              disabled={isLoadingContacts || createMutation.isPending}
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
+            />
+          </div>
           <select
             value={selectedContactId}
             onChange={(e) => setSelectedContactId(e.target.value)}
             disabled={isLoadingContacts || createMutation.isPending}
             className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-brand-red focus:border-brand-red bg-white disabled:bg-gray-100 text-gray-900"
           >
-            <option value="">-- Choose a Contact --</option>
-            {contacts.map((c: any) => {
+            <option value="">
+              {filteredContacts.length === 0 ? '-- No contacts matched --' : `-- Choose a Contact (${filteredContacts.length}) --`}
+            </option>
+            {filteredContacts.map((c: any) => {
               const name = `${c.First_Name || ''} ${c.Last_Name || ''}`.trim() || 'Unnamed Contact';
               const acct = typeof c.Account_Name === 'object' ? c.Account_Name?.name : c.Account_Name;
               return (
@@ -137,7 +170,10 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
         <div className="text-center">
           <button 
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              setContactSearch('');
+              onClose();
+            }}
             className="text-xs text-gray-400 hover:text-gray-600 underline"
           >
             Dismiss
@@ -147,4 +183,3 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
     </div>
   );
 }
-
