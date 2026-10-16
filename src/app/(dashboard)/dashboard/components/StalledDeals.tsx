@@ -4,7 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, AlertTriangle, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-export default function StalledDeals() {
+interface StalledDealsProps {
+  onSelectDeal?: (dealId: string) => void;
+}
+
+export default function StalledDeals({ onSelectDeal }: StalledDealsProps) {
   const { data: deals, isLoading: isLoadingDeals } = useQuery({
     queryKey: ['deals'],
     queryFn: async () => {
@@ -88,14 +92,10 @@ export default function StalledDeals() {
               const isStale = modifiedTime && modifiedTime < fourteenDaysAgo;
               const daysAgo = modifiedTime ? Math.floor((now.getTime() - modifiedTime.getTime()) / (1000 * 60 * 60 * 24)) : '?';
 
-              return (
-                <Link 
-                  key={deal.id} 
-                  href={`/dashboard/pipeline?deal=${deal.id}`}
-                  className="block p-3 rounded-lg hover:bg-amber-50/50 transition-colors border border-transparent hover:border-amber-100 group"
-                >
+              const content = (
+                <>
                   <div className="flex justify-between items-start mb-1">
-                    <h4 className="text-sm font-semibold text-gray-900 line-clamp-1 pr-4 group-hover:text-amber-900">
+                    <h4 className="text-sm font-semibold text-gray-900 line-clamp-1 pr-4 group-hover:text-amber-900 text-left">
                       {deal.Deal_Name}
                     </h4>
                     {isStale && (
@@ -109,6 +109,29 @@ export default function StalledDeals() {
                     <span className="text-gray-500">{deal.Stage}</span>
                     <span className="text-amber-600 font-medium">No Next Step</span>
                   </div>
+                </>
+              );
+
+              if (onSelectDeal) {
+                return (
+                  <button
+                    key={deal.id}
+                    type="button"
+                    onClick={() => onSelectDeal(deal.id)}
+                    className="w-full text-left block p-3 rounded-lg hover:bg-amber-50/50 transition-colors border border-transparent hover:border-amber-100 group cursor-pointer"
+                  >
+                    {content}
+                  </button>
+                );
+              }
+
+              return (
+                <Link 
+                  key={deal.id} 
+                  href={`/dashboard/pipeline?deal=${deal.id}`}
+                  className="block p-3 rounded-lg hover:bg-amber-50/50 transition-colors border border-transparent hover:border-amber-100 group"
+                >
+                  {content}
                 </Link>
               );
             })}

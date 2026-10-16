@@ -8,7 +8,11 @@ import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { useState } from 'react';
 
-export default function MyToDos() {
+interface MyToDosProps {
+  onSelectDeal?: (dealId: string) => void;
+}
+
+export default function MyToDos({ onSelectDeal }: MyToDosProps) {
   const queryClient = useQueryClient();
   const { user } = useUser();
   const [viewMode, setViewMode] = useState<"me" | "team">("team");
@@ -151,13 +155,24 @@ export default function MyToDos() {
             <div key={group} className="space-y-1">
               <h4 className="text-xs font-semibold text-brand-red uppercase tracking-wider sticky top-0 bg-white py-1 z-10">
                 {groupDealIds[group] ? (
-                  <Link
-                    href={`/dashboard/pipeline?deal=${groupDealIds[group]}`}
-                    className="hover:underline underline-offset-2"
-                    title="Open project"
-                  >
-                    {group}
-                  </Link>
+                  onSelectDeal ? (
+                    <button
+                      type="button"
+                      onClick={() => onSelectDeal(groupDealIds[group])}
+                      className="hover:underline underline-offset-2 text-left cursor-pointer"
+                      title="Open project details"
+                    >
+                      {group}
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/dashboard/pipeline?deal=${groupDealIds[group]}`}
+                      className="hover:underline underline-offset-2"
+                      title="Open project"
+                    >
+                      {group}
+                    </Link>
+                  )
                 ) : (
                   group
                 )}

@@ -4,7 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, Activity, FileText, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function RecentActivity() {
+interface RecentActivityProps {
+  onSelectDeal?: (dealId: string) => void;
+}
+
+export default function RecentActivity({ onSelectDeal }: RecentActivityProps) {
   const { data: deals, isLoading: isLoadingDeals } = useQuery({
     queryKey: ['deals'],
     queryFn: async () => {
@@ -41,6 +45,7 @@ export default function RecentActivity() {
         activities.push({
           id: `deal-${deal.id}`,
           type: 'deal',
+          dealId: deal.id,
           title: deal.Deal_Name,
           description: `Stage updated to ${deal.Stage}`,
           timestamp: new Date(deal.Modified_Time),
@@ -59,6 +64,7 @@ export default function RecentActivity() {
         activities.push({
           id: `task-${task.id}`,
           type: 'task',
+          dealId: task.What_Id?.id || null,
           title: task.Subject,
           description: `Task marked as completed`,
           timestamp: new Date(task.Modified_Time || new Date()), // Fallback
@@ -96,7 +102,15 @@ export default function RecentActivity() {
                 <activity.icon className={`w-3.5 h-3.5 ${activity.color}`} />
               </div>
               <div className="min-w-0 flex-1">
-                {activity.link ? (
+                {activity.dealId && onSelectDeal ? (
+                  <button
+                    type="button"
+                    onClick={() => onSelectDeal(activity.dealId)}
+                    className="text-sm font-medium text-gray-900 hover:text-brand-red transition-colors line-clamp-1 block text-left cursor-pointer"
+                  >
+                    {activity.title}
+                  </button>
+                ) : activity.link ? (
                   <Link href={activity.link} className="text-sm font-medium text-gray-900 hover:text-brand-red transition-colors line-clamp-1 block">
                     {activity.title}
                   </Link>
