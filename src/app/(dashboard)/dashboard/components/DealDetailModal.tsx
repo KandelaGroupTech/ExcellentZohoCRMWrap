@@ -39,7 +39,25 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const [newNoteContent, setNewNoteContent] = useState('');
   const [logAsInitials, setLogAsInitials] = useState('');
 
-  React.useEffect(() => { if (initials && !logAsInitials) setLogAsInitials(initials); }, [initials]);
+  React.useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('user_initials') : null;
+    if (saved) {
+      setLogAsInitials(saved.toUpperCase());
+    } else if (initials && !logAsInitials) {
+      const defaultInits = (initials === 'CJ' || !initials) ? 'RA' : initials;
+      setLogAsInitials(defaultInits);
+      localStorage.setItem('user_initials', defaultInits);
+    } else if (!logAsInitials) {
+      setLogAsInitials('RA');
+    }
+  }, [initials]);
+
+  const updateLogAsInitials = (val: string) => {
+    const upper = val.toUpperCase();
+    setLogAsInitials(upper);
+    localStorage.setItem('user_initials', upper);
+    window.dispatchEvent(new CustomEvent('initials_changed'));
+  };
   const [editingAmount, setEditingAmount] = useState(false);
   const [editAmountValue, setEditAmountValue] = useState('');
   const [editingAccount, setEditingAccount] = useState(false);
@@ -993,7 +1011,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
                       type="text" 
                       maxLength={3}
                       value={logAsInitials}
-                      onChange={(e) => setLogAsInitials(e.target.value.toUpperCase())}
+                      onChange={(e) => updateLogAsInitials(e.target.value)}
                       className="w-8 bg-transparent text-xs font-bold text-gray-900 border-none p-0 focus:ring-0 text-center"
                       placeholder="??"
                     />

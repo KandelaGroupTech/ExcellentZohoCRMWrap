@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import SwipeableCard from '../../components/SwipeableCard';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { parseTaskSubject, isTaskForUser } from '@/lib/taskParser';
 
 interface MyToDosProps {
@@ -18,7 +18,75 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
   const { user } = useUser();
   const [viewMode, setViewMode] = useState<"me" | "team">("team");
   
-  const myInitials = user ? `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}`.toUpperCase() : "";
+  const [activeInitials, setActiveInitials] = useState<string>('');
+
+  const { data: teamMembers = [] } = useQuery<{ id?: string; name: string; initials: string; email?: string }[]>({
+    queryKey: ['team-members'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/team');
+      if (!res.ok) return [];
+      return res.json();
+    }
+  });
+
+  useEffect(() => {
+    // 1. Check localStorage first
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('user_initials') : null;
+    if (saved) {
+      setActiveInitials(saved.toUpperCase());
+      return;
+    }
+
+    // 2. Check if logged-in user matches email / name
+    const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase() || '';
+    if (email.includes('rasala') || email.includes('richard')) {
+      setActiveInitials('RA');
+      localStorage.setItem('user_initials', 'RA');
+      return;
+    }
+    if (email.includes('crm@excellentjob.com')) {
+      setActiveInitials('RA');
+      localStorage.setItem('user_initials', 'RA');
+      return;
+    }
+
+    // Match with teamMembers list
+    if (teamMembers.length > 0) {
+      const matched = teamMembers.find(m => m.email?.toLowerCase() === email || m.id === user?.id);
+      if (matched?.initials) {
+        setActiveInitials(matched.initials.toUpperCase());
+        localStorage.setItem('user_initials', matched.initials.toUpperCase());
+        return;
+      }
+    }
+
+    // 3. Fallback to Clerk initials
+    if (user?.firstName || user?.lastName) {
+      const inits = `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}`.toUpperCase();
+      if (inits) {
+        const finalInits = inits === 'CJ' ? 'RA' : inits;
+        setActiveInitials(finalInits);
+        localStorage.setItem('user_initials', finalInits);
+        return;
+      }
+    }
+
+    setActiveInitials('RA');
+  }, [user, teamMembers]);
+
+  // Sync initials changes across tabs/components
+  useEffect(() => {
+    const handleSync = () => {
+      const saved = localStorage.getItem('user_initials');
+      if (saved) setActiveInitials(saved.toUpperCase());
+    };
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('initials_changed', handleSync as EventListener);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('initials_changed', handleSync as EventListener);
+    };
+  }, []);
 
   const { data: allTasks, isLoading } = useQuery({
     queryKey: ['all-tasks'],
@@ -61,7 +129,7 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
   
   const openTasks = viewMode === 'team' 
     ? allOpenTasks 
-    : allOpenTasks.filter((t: any) => isTaskForUser(t.Subject, myInitials));
+    : allOpenTasks.filter((t: any) => isTaskForUser(t.Subject, activeInitials));
   
   // Map group name -> deal id (only for tasks linked to a Deal)
   const groupDealIds: Record<string, string> = {};
@@ -110,15 +178,42 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
         </div>
         
         <div className="flex items-center bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setViewMode('me')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-              viewMode === 'me' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <User className="w-3.5 h-3.5" />
-            Mine
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={() => setViewMode('me')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                viewMode === 'me' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Mine</span>
+              {activeInitials && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-800">
+                  {activeInitials}
+                </span>
+              )}
+            </button>
+            {teamMembers.length > 0 && (
+              <select
+                value={activeInitials}
+                onChange={(e) => {
+                  const val = e.target.value.toUpperCase();
+                  setActiveInitials(val);
+                  localStorage.setItem('user_initials', val);
+                  window.dispatchEvent(new CustomEvent('initials_changed'));
+                  setViewMode('me');
+                }}
+                className="text-[11px] font-semibold bg-transparent text-gray-600 hover:text-gray-900 border-none rounded py-1 px-1 focus:ring-0 cursor-pointer"
+                title="Switch active user initials"
+              >
+                {teamMembers.map((m) => (
+                  <option key={m.id || m.initials} value={m.initials}>
+                    {m.initials} ({m.name})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
           <button
             onClick={() => setViewMode('team')}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
@@ -195,7 +290,7 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
                                   <span 
                                     key={init} 
                                     className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
-                                      init === myInitials
+                                      init === activeInitials
                                         ? 'bg-blue-100 text-blue-700 border-blue-200'
                                         : 'bg-gray-100 text-gray-600 border-gray-200'
                                     }`}
