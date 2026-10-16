@@ -49,7 +49,7 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const [editingName, setEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
 
-  const { data: teamMembers = [] } = useQuery({
+  const { data: teamMembers = [] } = useQuery<{ id?: string; name: string; initials: string; email?: string }[]>({
     queryKey: ['team-members'],
     queryFn: async () => {
       const res = await fetch('/website-demos/excellentzohocrm/api/team');
@@ -751,37 +751,105 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
           {/* New Task Form */}
           {isAdmin && (
             <form 
-              className="mt-4 flex flex-col sm:flex-row gap-2" 
+              className="mt-4 flex flex-col sm:flex-row gap-2 relative" 
               onSubmit={(e) => {
                 e.preventDefault();
                 if (newTaskSubject.trim()) {
-                  const subjectWithInitials = logAsInitials ? `${newTaskSubject.trim()} - ${logAsInitials}` : newTaskSubject.trim();
-                  createTaskMutation.mutate({ subject: subjectWithInitials, dueDate: newTaskDate });
+                  let finalSubject = newTaskSubject.trim();
+                  const parsed = parseTaskSubject(finalSubject);
+                  if (parsed.initials.length === 0 && logAsInitials) {
+                    finalSubject = finalSubject + ' - ' + logAsInitials;
+                  }
+                  createTaskMutation.mutate({ subject: finalSubject, dueDate: newTaskDate });
+                  setMentionQuery(null);
                 }
               }}
             >
-              <input 
+              <div className="flex-1 min-w-0 relative">
+                <input 
+                  ref={taskInputRef}
                   type="text" 
                   value={newTaskSubject}
-                  onChange={(e) => setNewTaskSubject(e.target.value)}
-                  placeholder="Add a new follow-up..." 
-                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const pos = e.target.selectionStart || val.length;
+                    setNewTaskSubject(val);
+
+                    const textBeforeCursor = val.slice(0, pos);
+                    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+                    if (lastAtIndex !== -1) {
+                      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+                      if (!textAfterAt.includes(' ')) {
+                        setMentionStartIndex(lastAtIndex);
+                        setMentionQuery(textAfterAt.toLowerCase());
+                        return;
+                      }
+                    }
+                    setMentionQuery(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setMentionQuery(null);
+                  }}
+                  placeholder="Add a new follow-up... (Type @ to tag a team member)" 
+                  className="block w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
                 />
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={newTaskDate}
-                    onChange={(e) => setNewTaskDate(e.target.value)}
-                    className="block w-full sm:w-36 px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={createTaskMutation.isPending || !newTaskSubject.trim()}
-                    className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90 disabled:opacity-50 h-[38px] w-[38px] shrink-0"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
+
+                {/* Team member @mention dropdown */}
+                {mentionQuery !== null && (
+                  <div className="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 max-h-48 overflow-y-auto">
+                    <div className="px-3 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                      Tag team member
+                    </div>
+                    {teamMembers
+                      .filter((m) => 
+                        (m.name || '').toLowerCase().includes(mentionQuery) ||
+                        (m.initials || '').toLowerCase().includes(mentionQuery)
+                      )
+                      .map((member) => (
+                        <button
+                          key={member.id || member.initials}
+                          type="button"
+                          onClick={() => {
+                            const before = newTaskSubject.slice(0, mentionStartIndex);
+                            const after = newTaskSubject.slice(mentionStartIndex + 1 + (mentionQuery || '').length);
+                            const updated = before + '@' + member.initials + ' ' + after;
+                            setNewTaskSubject(updated);
+                            setMentionQuery(null);
+                            setTimeout(() => taskInputRef.current?.focus(), 50);
+                          }}
+                          className="w-full text-left px-3 py-1.5 hover:bg-brand-red/10 flex items-center justify-between text-xs transition-colors"
+                        >
+                          <span className="font-medium text-gray-900">{member.name}</span>
+                          <span className="bg-gray-100 text-gray-700 font-bold px-1.5 py-0.5 rounded text-[10px]">
+                            @{member.initials}
+                          </span>
+                        </button>
+                      ))}
+                    {teamMembers.filter((m) => 
+                      (m.name || '').toLowerCase().includes(mentionQuery) ||
+                      (m.initials || '').toLowerCase().includes(mentionQuery)
+                    ).length === 0 && (
+                      <div className="px-3 py-2 text-xs text-gray-400 italic">No matching team members</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={newTaskDate}
+                  onChange={(e) => setNewTaskDate(e.target.value)}
+                  className="block w-full sm:w-36 px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-brand-red focus:border-brand-red bg-white text-gray-900"
+                />
+                <button 
+                  type="submit" 
+                  disabled={createTaskMutation.isPending || !newTaskSubject.trim()}
+                  className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-red hover:bg-brand-red/90 disabled:opacity-50 h-[38px] w-[38px] shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
             </form>
           )}
 
