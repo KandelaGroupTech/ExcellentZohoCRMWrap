@@ -27,13 +27,15 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
   });
 
   const filteredContacts = useMemo(() => {
+    if (!Array.isArray(contacts)) return [];
     if (!contactSearch.trim()) return contacts;
     const q = contactSearch.toLowerCase();
     return contacts.filter((c: any) => {
       const name = `${c.First_Name || ''} ${c.Last_Name || ''}`.toLowerCase();
-      const acct = (typeof c.Account_Name === 'object' ? c.Account_Name?.name : c.Account_Name || '').toLowerCase();
-      const phone = (c.Phone || '').toLowerCase();
-      const email = (c.Email || '').toLowerCase();
+      const acctName = (c.Account_Name && typeof c.Account_Name === 'object' ? c.Account_Name.name : c.Account_Name) || '';
+      const acct = String(acctName).toLowerCase();
+      const phone = String(c.Phone || '').toLowerCase();
+      const email = String(c.Email || '').toLowerCase();
       return name.includes(q) || acct.includes(q) || phone.includes(q) || email.includes(q);
     });
   }, [contacts, contactSearch]);
@@ -125,7 +127,7 @@ export default function LogCallModal({ isOpen, onClose }: { isOpen: boolean, onC
             </option>
             {filteredContacts.map((c: any) => {
               const name = `${c.First_Name || ''} ${c.Last_Name || ''}`.trim() || 'Unnamed Contact';
-              const acct = typeof c.Account_Name === 'object' ? c.Account_Name?.name : c.Account_Name;
+              const acct = c.Account_Name && typeof c.Account_Name === 'object' ? c.Account_Name.name : c.Account_Name;
               return (
                 <option key={c.id} value={c.id}>
                   {name} {acct ? `(${acct})` : ''}
