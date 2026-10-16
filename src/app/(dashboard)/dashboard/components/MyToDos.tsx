@@ -7,6 +7,7 @@ import SwipeableCard from '../../components/SwipeableCard';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import { useState } from 'react';
+import { parseTaskSubject, isTaskForUser } from '@/lib/taskParser';
 
 interface MyToDosProps {
   onSelectDeal?: (dealId: string) => void;
@@ -46,17 +47,6 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
     }
   });
 
-  const renderSubject = (subject: string) => {
-    const match = subject.match(/ - ([A-Z]{2})$/);
-    if (match) {
-      return {
-        text: subject.replace(match[0], ''),
-        initials: match[1]
-      };
-    }
-    return { text: subject, initials: null };
-  };
-
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col items-center justify-center min-h-[300px]">
@@ -71,7 +61,7 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
   
   const openTasks = viewMode === 'team' 
     ? allOpenTasks 
-    : allOpenTasks.filter((t: any) => renderSubject(t.Subject).initials === myInitials);
+    : allOpenTasks.filter((t: any) => isTaskForUser(t.Subject, myInitials));
   
   // Map group name -> deal id (only for tasks linked to a Deal)
   const groupDealIds: Record<string, string> = {};
@@ -148,7 +138,9 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
               <CheckCircle2 className="w-6 h-6 text-green-600" />
             </div>
             <h4 className="text-base font-medium text-gray-900">All caught up!</h4>
-            <p className="text-sm text-gray-500 mt-1">You have no pending tasks right now.</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {viewMode === 'me' ? 'You have no assigned tasks right now.' : 'You have no pending tasks right now.'}
+            </p>
           </div>
         ) : (
           groupKeys.map(group => (
@@ -178,45 +170,59 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
                 )}
               </h4>
               <div className="space-y-0.5">
-                {groupedTasks[group].map((task: any) => (
-                  <SwipeableCard
-                    key={task.id}
-                    onComplete={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
-                  >
-                    <div className="group flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                      <button 
-                        onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
-                        className="mt-0.5 text-gray-400 hover:text-green-500 focus:outline-none transition-colors shrink-0"
-                      >
-                        <Circle className="w-5 h-5" />
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-gray-900 break-words flex-1">
-                            {renderSubject(task.Subject).text}
-                          </p>
-                          {renderSubject(task.Subject).initials && (
-                            <span className="shrink-0 bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-gray-200">
-                              {renderSubject(task.Subject).initials}
-                            </span>
+                {groupedTasks[group].map((task: any) => {
+                  const parsed = parseTaskSubject(task.Subject);
+                  return (
+                    <SwipeableCard
+                      key={task.id}
+                      onComplete={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
+                    >
+                      <div className="group flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        <button 
+                          onClick={() => updateTaskMutation.mutate({ taskId: task.id, status: 'Completed' })}
+                          className="mt-0.5 text-gray-400 hover:text-green-500 focus:outline-none transition-colors shrink-0"
+                        >
+                          <Circle className="w-5 h-5" />
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium text-gray-900 break-words flex-1">
+                              {parsed.text}
+                            </p>
+                            {parsed.initials.length > 0 && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                {parsed.initials.map(init => (
+                                  <span 
+                                    key={init} 
+                                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                      init === myInitials
+                                        ? 'bg-blue-100 text-blue-700 border-blue-200'
+                                        : 'bg-gray-100 text-gray-600 border-gray-200'
+                                    }`}
+                                  >
+                                    {init}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {task.Due_Date && (
+                            <div className={`mt-1 flex items-center gap-1 text-xs font-medium ${
+                              new Date(task.Due_Date) < new Date(new Date().setHours(0,0,0,0)) 
+                                ? 'text-red-600' 
+                                : new Date(task.Due_Date).toDateString() === new Date().toDateString()
+                                  ? 'text-orange-500'
+                                  : 'text-gray-500'
+                            }`}>
+                              <Calendar className="w-3.5 h-3.5" />
+                              {new Date(task.Due_Date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: new Date(task.Due_Date).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined })}
+                            </div>
                           )}
                         </div>
-                        {task.Due_Date && (
-                          <div className={`mt-1 flex items-center gap-1 text-xs font-medium ${
-                            new Date(task.Due_Date) < new Date(new Date().setHours(0,0,0,0)) 
-                              ? 'text-red-600' 
-                              : new Date(task.Due_Date).toDateString() === new Date().toDateString()
-                                ? 'text-orange-500'
-                                : 'text-gray-500'
-                          }`}>
-                            <Calendar className="w-3.5 h-3.5" />
-                            {new Date(task.Due_Date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: new Date(task.Due_Date).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined })}
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  </SwipeableCard>
-                ))}
+                    </SwipeableCard>
+                  );
+                })}
               </div>
             </div>
           ))

@@ -7,6 +7,7 @@ import { useAuth, useUser } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import Modal from '../../components/Modal';
 import { useCallLogger } from '../../components/CallLoggerProvider';
+import { parseTaskSubject } from '@/lib/taskParser';
 
 interface DealDetailModalProps {
   deal: any;
@@ -47,6 +48,20 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   const [editContactValue, setEditContactValue] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: async () => {
+      const res = await fetch('/website-demos/excellentzohocrm/api/team');
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: isOpen
+  });
+
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionStartIndex, setMentionStartIndex] = useState<number>(-1);
+  const taskInputRef = React.useRef<HTMLInputElement>(null);
 
   const { data: accounts } = useQuery({
     queryKey: ['accounts'],
