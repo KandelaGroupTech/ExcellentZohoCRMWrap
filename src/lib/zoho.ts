@@ -446,6 +446,100 @@ export async function updateAccountDescriptions(
   return results;
 }
 
+export type ZohoAccountMutationResult = {
+  id: string;
+  status: 'success' | 'error';
+  message?: string;
+  modifiedTime: string | null;
+};
+
+/**
+ * Create or update Account records in batches of 100.
+ * Callers pass field values separately from `id`. The id is only the Zoho
+ * record key on update; it is never copied out of `fields`.
+ */
+export async function mutateAccounts(
+  method: 'POST' | 'PUT',
+  records: { id?: string; fields: Record<string, unknown> }[]
+): Promise<ZohoAccountMutationResult[]> {
+  if (records.length === 0) return [];
+
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  const results: ZohoAccountMutationResult[] = [];
+
+  for (let i = 0; i < records.length; i += 100) {
+    const chunk = records.slice(i, i + 100);
+    const data = chunk.map((record) => {
+      const fields = { ...record.fields };
+      delete fields.id;
+      // Null clears a field on update. On create, omit nulls so an empty
+      // Rating or Description is simply left blank.
+      if (method === 'POST') {
+        for (const key of Object.keys(fields)) {
+          if (fields[key] === null) delete fields[key];
+        }
+        return fields;
+      }
+      return { id: record.id, ...fields };
+    });
+
+    const response = await fetch(`${domain}/crm/v6/Accounts`, {
+      method,
+      headers: {
+        Authorization: `Zoho-oauthtoken ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data }),
+      cache: 'no-store',
+    });
+
+    const responseData = await response.json().catch(() => ({}));
+    const rows = Array.isArray(responseData.data) ? responseData.data : null;
+    if (!rows) {
+      const message = responseData.message || `HTTP ${response.status}`;
+      for (const record of chunk) {
+        results.push({
+          id: record.id || '',
+          status: 'error',
+          message,
+          modifiedTime: null,
+        });
+      }
+      continue;
+    }
+
+    for (let index = 0; index < chunk.length; index++) {
+      const row = rows[index];
+      const requestedId = chunk[index]?.id || '';
+      if (!row) {
+        results.push({
+          id: requestedId,
+          status: 'error',
+          message: 'Zoho response omitted this record',
+          modifiedTime: null,
+        });
+        continue;
+      }
+      const id = row?.details?.id || requestedId;
+      const modifiedTime =
+        typeof row?.details?.Modified_Time === 'string' ? row.details.Modified_Time : null;
+      if (row?.status === 'success') {
+        results.push({ id, status: 'success', modifiedTime });
+      } else {
+        results.push({
+          id: id || requestedId,
+          status: 'error',
+          message: row?.message || row?.code || 'Update failed',
+          modifiedTime: null,
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
 async function deleteRecord(module: string, recordId: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
