@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { PhoneCall, RotateCw } from 'lucide-react';
+import { Contact, RotateCw } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import LogCallModal from './LogCallModal';
+import LogContactModal from './LogContactModal';
 
 export default function HeaderActions() {
   const { orgRole } = useAuth();
@@ -45,10 +45,10 @@ export default function HeaderActions() {
             onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center px-3 py-2 border border-brand-red shadow-sm text-sm font-medium rounded-md text-white bg-brand-red hover:bg-brand-red/90 transition-colors"
           >
-            <PhoneCall className="h-4 w-4 mr-2" />
-            Log Call
+            <Contact className="h-4 w-4 mr-2" />
+            Log Contact
           </button>
-          <LogCallModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+          <LogContactModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </>
       )}
     </div>
