@@ -10,6 +10,7 @@ import StalledDeals from './components/StalledDeals';
 import RecentActivity from './components/RecentActivity';
 import DealDetailModal from './components/DealDetailModal';
 import TodayPrioritiesBar from './components/TodayPrioritiesBar';
+import UnspokenContacts from './components/UnspokenContacts';
 
 const STAGES = [
   "Qualification",
@@ -94,6 +95,7 @@ export default function DashboardHome() {
         <div className="flex flex-col gap-6">
           <PipelineSnapshot />
           <StalledDeals onSelectDeal={(id) => setSelectedDealId(id)} />
+          <UnspokenContacts />
         </div>
 
       </div>
