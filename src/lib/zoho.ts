@@ -558,7 +558,7 @@ export async function fetchTasks() {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
   
-  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id,Who_Id,SEMODULE_ID,SE_Module,Due_Date`, {
+  const response = await fetch(`${domain}/crm/v6/Tasks?fields=Subject,Status,What_Id,Who_Id,SEMODULE_ID,SE_Module,Due_Date,Created_Time,Modified_Time`, {
     method: 'GET',
     headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
     cache: 'no-store'
@@ -568,6 +568,26 @@ export async function fetchTasks() {
     if (response.status === 204) return [];
     const text = await response.text();
     throw new Error(`Failed to fetch all tasks: ${response.status} ${text}`);
+  }
+  
+  const data = await response.json();
+  return data.data || [];
+}
+
+export async function fetchCalls() {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+  
+  const fields = 'Subject,Call_Type,Call_Start_Time,Call_Duration,Description,What_Id,Who_Id,Created_Time,Modified_Time';
+  const response = await fetch(`${domain}/crm/v6/Calls?fields=${fields}`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+  
+  if (!response.ok) {
+    if (response.status === 204) return [];
+    return [];
   }
   
   const data = await response.json();

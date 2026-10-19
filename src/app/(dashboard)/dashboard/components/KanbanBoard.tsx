@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUrlState } from '@/hooks/useUrlState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search, Paperclip } from 'lucide-react';
+import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search, Paperclip, Archive, ArchiveRestore, Columns, RotateCcw, Building2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 
@@ -39,6 +39,7 @@ export default function KanbanBoard() {
   const [searchQuery, setSearchQuery] = useUrlState('q', '');
   const [dealParam, setDealParam] = useUrlState('deal', '');
   const [collapsedStages, setCollapsedStages] = useState<Record<string, boolean>>({});
+  const [pipelineView, setPipelineView] = useState<'active' | 'archived'>('active');
   const queryClient = useQueryClient();
   const touchDragDealId = useRef<string | null>(null);
   const touchDragGhost = useRef<HTMLDivElement | null>(null);
@@ -136,6 +137,38 @@ export default function KanbanBoard() {
     }
   });
 
+  const toggleArchiveMutation = useMutation({
+    mutationFn: async ({ dealId, currentDesc, archive }: { dealId: string, currentDesc: string, archive: boolean }) => {
+      let baseDesc = (currentDesc || '').split('\n---DEAL_META---')[0];
+      let meta: any = {};
+      try {
+        const parts = (currentDesc || '').split('---DEAL_META---');
+        if (parts.length > 1) meta = JSON.parse(parts[parts.length - 1].trim());
+      } catch(e) {}
+      
+      const newMeta = {
+        ...meta,
+        archived: archive,
+        archivedAt: archive ? new Date().toISOString() : null
+      };
+      
+      const newDesc = baseDesc + '\n---DEAL_META---\n' + JSON.stringify(newMeta);
+      const res = await fetch('/website-demos/excellentzohocrm/api/deals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealId, description: newDesc })
+      });
+      if (!res.ok) throw new Error(archive ? 'Failed to archive project' : 'Failed to restore project');
+      return res.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      toast.success(variables.archive ? 'Project moved to Archive' : 'Project restored to Active Pipeline');
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update project')
+  });
+
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -154,26 +187,35 @@ export default function KanbanBoard() {
     );
   }
 
-  const filteredDeals = deals?.filter((d: any) => {
+  // Parse owners and archive status from description
+  const processedDeals = (deals || []).map((deal: any) => {
+    let owner = null;
+    let isArchived = false;
+    let archivedAt = null;
+    if (deal.Description) {
+      if (deal.Description.includes('---DEAL_META---')) {
+        const parts = deal.Description.split('---DEAL_META---');
+        const metaStr = parts[parts.length - 1].trim();
+        try {
+          const parsed = JSON.parse(metaStr);
+          owner = parsed.owner || null;
+          isArchived = !!parsed.archived;
+          archivedAt = parsed.archivedAt || null;
+        } catch(e) {}
+      }
+    }
+    return { ...deal, _owner: owner, _isArchived: isArchived, _archivedAt: archivedAt };
+  });
+
+  const activeDeals = processedDeals.filter((d: any) => !d._isArchived);
+  const archivedDeals = processedDeals.filter((d: any) => d._isArchived);
+
+  const filteredDeals = (pipelineView === 'active' ? activeDeals : archivedDeals).filter((d: any) => {
     if (!searchQuery) return true;
     const lowerQuery = searchQuery.toLowerCase();
     const dealName = (d.Deal_Name || '').toLowerCase();
     const accountName = (d.Account_Name?.name || '').toLowerCase();
     return dealName.includes(lowerQuery) || accountName.includes(lowerQuery);
-  }) || [];
-
-  
-  // Parse owners from description
-  const processedDeals = (deals || []).map((deal: any) => {
-    let owner = null;
-    if (deal.Description) {
-      if (deal.Description.includes('---DEAL_META---')) {
-          const parts = deal.Description.split('---DEAL_META---');
-          const metaStr = parts[parts.length - 1].trim();
-          try { owner = JSON.parse(metaStr).owner; } catch(e) {}
-        }
-    }
-    return { ...deal, _owner: owner };
   });
 
   const dealsByStage = STAGES.reduce((acc, stage) => {
@@ -277,21 +319,134 @@ export default function KanbanBoard() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="mb-4 flex-shrink-0">
-        <div className="relative max-w-sm">
+      <div className="mb-4 flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="relative max-w-sm flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-red focus:border-brand-red sm:text-sm"
-            placeholder="Search deals by name or account..."
+            placeholder={pipelineView === 'active' ? "Search active deals by name or account..." : "Search archived deals..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
+        {/* View Switcher: Active Deals vs Archived / Stalled */}
+        <div className="flex items-center bg-gray-100 rounded-lg p-1 self-start sm:self-auto border border-gray-200">
+          <button
+            onClick={() => setPipelineView('active')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              pipelineView === 'active' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Columns className="w-3.5 h-3.5" />
+            <span>Active Pipeline</span>
+            <span className="bg-gray-200 text-gray-800 text-[10px] font-bold px-1.5 py-0.5 rounded">
+              {activeDeals.length}
+            </span>
+          </button>
+          
+          <button
+            onClick={() => setPipelineView('archived')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              pipelineView === 'archived' ? 'bg-amber-100 text-amber-900 shadow-sm border border-amber-200' : 'text-gray-500 hover:text-gray-700'
+            }`}
+            title="Projects on hold or stalled"
+          >
+            <Archive className="w-3.5 h-3.5 text-amber-600" />
+            <span>Archived / Stalled</span>
+            <span className="bg-amber-200 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">
+              {archivedDeals.length}
+            </span>
+          </button>
+        </div>
       </div>
-      {/* Mobile Vertical Accordion Layout */}
+      {pipelineView === 'archived' ? (
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                <Archive className="w-4 h-4 text-amber-700" />
+                Archived & Stalled Projects Shelf
+              </h4>
+              <p className="text-xs text-amber-700 mt-0.5">
+                These projects are on hold and excluded from your active pipeline stages and forecast totals.
+              </p>
+            </div>
+            <span className="text-xs font-bold bg-amber-200 text-amber-900 px-2.5 py-1 rounded-full">
+              {archivedDeals.length} {archivedDeals.length === 1 ? 'Project' : 'Projects'} Shelved
+            </span>
+          </div>
+
+          {filteredDeals.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+              <Archive className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+              <h4 className="text-base font-semibold text-gray-900">No archived projects found</h4>
+              <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+                {searchQuery 
+                  ? "No archived projects matched your search query." 
+                  : "Stalled or on-hold projects can be shelved from any deal's detail modal so they don't skew your active pipeline."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
+              {filteredDeals.map((deal: any) => (
+                <div
+                  key={deal.id}
+                  className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDeal(deal)}
+                        className="text-left font-bold text-sm text-gray-900 hover:text-brand-red transition-colors line-clamp-2"
+                      >
+                        {deal.Deal_Name}
+                      </button>
+                      <span className="bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded border border-gray-200 shrink-0">
+                        {deal.Stage}
+                      </span>
+                    </div>
+
+                    {deal.Account_Name?.name && (
+                      <p className="text-xs text-gray-600 flex items-center gap-1.5 mb-2">
+                        <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                        <span className="truncate">{deal.Account_Name.name}</span>
+                      </p>
+                    )}
+
+                    <div className="text-sm font-semibold text-gray-900 mb-3">
+                      {formatCurrency(deal.Amount)}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {deal._archivedAt ? new Date(deal._archivedAt).toLocaleDateString() : 'Archived'}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={toggleArchiveMutation.isPending}
+                      onClick={() => toggleArchiveMutation.mutate({ dealId: deal.id, currentDesc: deal.Description, archive: false })}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-brand-red hover:bg-brand-red/10 rounded-md transition-colors"
+                      title="Restore to active pipeline"
+                    >
+                      <ArchiveRestore className="w-3.5 h-3.5" />
+                      Restore
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Mobile Vertical Accordion Layout */}
       <div className="flex md:hidden flex-col h-full space-y-3 overflow-y-auto pb-6 px-1 custom-scrollbar">
         {STAGES.map((stage) => {
           const stageDeals = dealsByStage[stage];
@@ -483,6 +638,10 @@ export default function KanbanBoard() {
         );
       })}
       
+      </div>
+        </>
+      )}
+
       {/* Deal Detail Modal */}
       <DealDetailModal 
         deal={selectedDeal} 
@@ -496,7 +655,6 @@ export default function KanbanBoard() {
         }}
         isUpdatingStage={updateStageMutation.isPending}
       />
-    </div>
     </div>
   );
 }

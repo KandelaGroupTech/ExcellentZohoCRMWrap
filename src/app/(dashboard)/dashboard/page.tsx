@@ -9,6 +9,7 @@ import PipelineSnapshot from './components/PipelineSnapshot';
 import StalledDeals from './components/StalledDeals';
 import RecentActivity from './components/RecentActivity';
 import DealDetailModal from './components/DealDetailModal';
+import TodayPrioritiesBar from './components/TodayPrioritiesBar';
 
 const STAGES = [
   "Qualification",
@@ -79,6 +80,8 @@ export default function DashboardHome() {
         <h2 className="text-xl font-bold text-gray-900">Command Center</h2>
       </div>
       
+      <TodayPrioritiesBar onSelectDeal={(id) => setSelectedDealId(id)} />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
         
         {/* Left Column: Actionable items like To-Dos */}

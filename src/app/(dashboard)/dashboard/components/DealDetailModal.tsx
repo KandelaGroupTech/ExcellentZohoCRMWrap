@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X, Paperclip, FileText, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, CheckCircle2, Circle, Trash2, Pencil, Check, X, Paperclip, FileText, ExternalLink, Archive, ArchiveRestore } from 'lucide-react';
 import { useAuth, useUser } from '@clerk/nextjs';
 import toast from 'react-hot-toast';
 import Modal from '../../components/Modal';
@@ -374,13 +374,50 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
 
   
   let currentOwner = null;
+  let isArchived = false;
   if (deal?.Description) {
     if (deal.Description.includes('---DEAL_META---')) {
       const parts = deal.Description.split('---DEAL_META---');
       const metaStr = parts[parts.length - 1].trim();
-      try { currentOwner = JSON.parse(metaStr).owner; } catch(e) {}
+      try {
+        const parsed = JSON.parse(metaStr);
+        currentOwner = parsed.owner || null;
+        isArchived = !!parsed.archived;
+      } catch(e) {}
     }
   }
+
+  const toggleArchiveMutation = useMutation({
+    mutationFn: async () => {
+      let baseDesc = (deal.Description || '').split('\n---DEAL_META---')[0];
+      let meta: any = {};
+      try {
+        const parts = (deal.Description || '').split('---DEAL_META---');
+        if (parts.length > 1) meta = JSON.parse(parts[parts.length - 1].trim());
+      } catch(e) {}
+
+      const nextArchived = !meta.archived;
+      const newMeta = {
+        ...meta,
+        archived: nextArchived,
+        archivedAt: nextArchived ? new Date().toISOString() : null
+      };
+
+      const newDesc = baseDesc + '\n---DEAL_META---\n' + JSON.stringify(newMeta);
+      const res = await fetch('/website-demos/excellentzohocrm/api/deals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dealId: deal.id, description: newDesc })
+      });
+      if (!res.ok) throw new Error(nextArchived ? 'Failed to archive project' : 'Failed to restore project');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      toast.success(isArchived ? 'Project restored to active pipeline' : 'Project moved to Archive');
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update archive status')
+  });
 
   const claimDealMutation = useMutation({
     mutationFn: async (newOwner: string | null) => {
@@ -480,6 +517,25 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={editingName ? 'Edit Deal' : deal.Deal_Name}>
       <div className="space-y-6">
+          {isArchived && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Archive className="w-4 h-4 text-amber-700 shrink-0" />
+                <span className="text-xs font-semibold text-amber-900">
+                  This project is currently archived (shelved) and hidden from active pipeline counts.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleArchiveMutation.mutate()}
+                disabled={toggleArchiveMutation.isPending}
+                className="text-xs font-bold text-amber-900 hover:underline flex items-center gap-1 shrink-0 ml-3"
+              >
+                <ArchiveRestore className="w-3.5 h-3.5" />
+                Restore to Pipeline
+              </button>
+            </div>
+          )}
         {/* Deal Info */}
         <div className="bg-gray-50 p-4 rounded-md">
           {/* Editable Deal Name */}
@@ -1029,7 +1085,30 @@ export default function DealDetailModal({ deal, isOpen, onClose, stages = [], on
           </div>
 
           {isAdmin && (
-            <div className="mt-8 pt-4 border-t flex justify-end">
+            <div className="mt-8 pt-4 border-t flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => toggleArchiveMutation.mutate()}
+                disabled={toggleArchiveMutation.isPending}
+                className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 ${
+                  isArchived
+                    ? 'text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200'
+                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-200'
+                }`}
+              >
+                {isArchived ? (
+                  <>
+                    <ArchiveRestore className="h-4 w-4 mr-2 text-amber-700" />
+                    Restore to Active Pipeline
+                  </>
+                ) : (
+                  <>
+                    <Archive className="h-4 w-4 mr-2 text-gray-500" />
+                    Archive / Shelve Project
+                  </>
+                )}
+              </button>
+
               <button 
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}

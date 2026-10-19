@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Circle, Loader2, Calendar, Users, User } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, Calendar, Users, User, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SwipeableCard from '../../components/SwipeableCard';
 import Link from 'next/link';
@@ -16,7 +16,7 @@ interface MyToDosProps {
 export default function MyToDos({ onSelectDeal }: MyToDosProps) {
   const queryClient = useQueryClient();
   const { user } = useUser();
-  const [viewMode, setViewMode] = useState<"me" | "team">("team");
+  const [viewMode, setViewMode] = useState<"me" | "delegated" | "team">("me");
   
   const [activeInitials, setActiveInitials] = useState<string>('');
 
@@ -127,9 +127,17 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
   // Filter out completed tasks and group by Project (Deal)
   const allOpenTasks = allTasks?.filter((t: any) => t.Status !== 'Completed') || [];
   
-  const openTasks = viewMode === 'team' 
-    ? allOpenTasks 
-    : allOpenTasks.filter((t: any) => isTaskForUser(t.Subject, activeInitials));
+  const mineTasks = allOpenTasks.filter((t: any) => isTaskForUser(t.Subject, activeInitials));
+  const delegatedTasks = allOpenTasks.filter((t: any) => {
+    const p = parseTaskSubject(t.Subject);
+    return p.initials.length > 0 && !p.initials.includes(activeInitials);
+  });
+
+  const openTasks = viewMode === 'me' 
+    ? mineTasks 
+    : viewMode === 'delegated'
+      ? delegatedTasks
+      : allOpenTasks;
   
   // Map group name -> deal id (only for tasks linked to a Deal)
   const groupDealIds: Record<string, string> = {};
@@ -181,17 +189,15 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
           <div className="flex items-center">
             <button
               onClick={() => setViewMode('me')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all ${
                 viewMode === 'me' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <User className="w-3.5 h-3.5" />
               <span>Mine</span>
-              {activeInitials && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-800">
-                  {activeInitials}
-                </span>
-              )}
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-800">
+                {mineTasks.length}
+              </span>
             </button>
             {teamMembers.length > 0 && (
               <select
@@ -214,14 +220,32 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
               </select>
             )}
           </div>
+
+          <button
+            onClick={() => setViewMode('delegated')}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all ${
+              viewMode === 'delegated' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
+            title="Tasks assigned to other team members"
+          >
+            <Share2 className="w-3.5 h-3.5 text-brand-red" />
+            <span>Delegated</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-800">
+              {delegatedTasks.length}
+            </span>
+          </button>
+
           <button
             onClick={() => setViewMode('team')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all ${
               viewMode === 'team' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            Team
+            <span>Team</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-200 text-gray-800">
+              {allOpenTasks.length}
+            </span>
           </button>
         </div>
       </div>
@@ -234,7 +258,7 @@ export default function MyToDos({ onSelectDeal }: MyToDosProps) {
             </div>
             <h4 className="text-base font-medium text-gray-900">All caught up!</h4>
             <p className="text-sm text-gray-500 mt-1">
-              {viewMode === 'me' ? 'You have no assigned tasks right now.' : 'You have no pending tasks right now.'}
+              {viewMode === 'me' ? 'You have no assigned tasks right now.' : viewMode === 'delegated' ? 'No tasks currently delegated to other team members.' : 'You have no pending tasks right now.'}
             </p>
           </div>
         ) : (
