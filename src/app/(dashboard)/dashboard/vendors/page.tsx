@@ -1,6 +1,6 @@
 'use client';
 import { formatPhoneNumber } from '@/lib/utils';
-import { vendorNotesText } from '@/lib/vendorPoc';
+import { vendorNotesText, initialVendorPocs } from '@/lib/vendorPoc';
 
 
 import { useState, useMemo, useRef, useEffect } from 'react';
@@ -141,6 +141,21 @@ export default function VendorsPage() {
     },
   });
 
+  const vendorsWithPocs = useMemo(() => {
+    if (!vendors) return [];
+    return vendors.map((v: any) => {
+      const { pocs } = initialVendorPocs(v.Description, {
+        name: v.Ticker_Symbol,
+        phone: v.Fax,
+      });
+      const meaningfulPocs = pocs.filter((p: any) => (p.name && p.name.trim()) || (p.phone && p.phone.trim()));
+      return {
+        ...v,
+        parsedPocs: meaningfulPocs
+      };
+    });
+  }, [vendors]);
+
   const tradeOptions = useMemo(() => {
     if (!vendors) return [];
     const set = new Set<string>();
@@ -162,14 +177,27 @@ export default function VendorsPage() {
   };
 
   const filtered = useMemo(() => {
-    if (!vendors) return [];
-    const result = vendors.filter((v: any) => {
-      const nameMatch = !search || (v.Account_Name || '').toLowerCase().includes(search.toLowerCase());
+    if (!vendorsWithPocs) return [];
+    const q = (search || '').trim().toLowerCase();
+    const cleanDigits = q.replace(/\D/g, '');
+
+    const result = vendorsWithPocs.filter((v: any) => {
+      const nameMatch = !q || (v.Account_Name || '').toLowerCase().includes(q);
+      const pocNameMatch = !q ||
+        (v.Ticker_Symbol || '').toLowerCase().includes(q) ||
+        v.parsedPocs.some((p: any) => (p.name || '').toLowerCase().includes(q));
+      const phoneMatch = cleanDigits.length >= 3 && (
+        (v.Phone || '').replace(/\D/g, '').includes(cleanDigits) ||
+        (v.Fax || '').replace(/\D/g, '').includes(cleanDigits) ||
+        v.parsedPocs.some((p: any) => (p.phone || '').replace(/\D/g, '').includes(cleanDigits))
+      );
+      const searchMatch = nameMatch || pocNameMatch || phoneMatch;
+
       const tradeMatch = !tradeFilter || (v.Industry && v.Industry.split(',').map((t: string) => t.trim()).includes(tradeFilter));
       const statusMatch = statusFilter.length === 0 || statusFilter.some(filter => {
         return filter === 'Uncategorized' ? (!v.Rating || v.Rating === '') : v.Rating === filter;
       });
-      return nameMatch && tradeMatch && statusMatch;
+      return searchMatch && tradeMatch && statusMatch;
     });
 
     if (sortKey) {
@@ -194,7 +222,7 @@ export default function VendorsPage() {
     }
 
     return result;
-  }, [vendors, search, tradeFilter, statusFilter, sortKey, sortDir]);
+  }, [vendorsWithPocs, search, tradeFilter, statusFilter, sortKey, sortDir]);
 
   if (isLoading) {
     return (
@@ -235,7 +263,7 @@ export default function VendorsPage() {
             <input
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-brand-red focus:border-brand-red sm:text-sm"
-              placeholder="Search by Vendor Name..."
+              placeholder="Search by vendor or contact name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -327,16 +355,44 @@ export default function VendorsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {vendor.Ticker_Symbol ? (
+                          {vendor.parsedPocs && vendor.parsedPocs.length > 0 ? (
+                            <div className="flex flex-col gap-1.5">
+                              {vendor.parsedPocs.map((poc: any, pIdx: number) => (
+                                <div key={poc.id || pIdx} className="flex flex-col">
+                                  <span className="font-medium text-gray-900">{poc.name || '—'}</span>
+                                  {poc.phone && (
+                                    <a 
+                                      href={`tel:${poc.phone.replace(/\D/g, '')}`} 
+                                      className="text-gray-500 hover:text-brand-red text-xs mt-0.5" 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        registerCallClick({
+                                          entityId: vendor.id,
+                                          entityType: 'Accounts',
+                                          name: poc.name ? `${vendor.Account_Name} (${poc.name})` : vendor.Account_Name
+                                        });
+                                      }}
+                                    >
+                                      {poc.phone}
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : vendor.Ticker_Symbol ? (
                             <div className="flex flex-col">
                               <span className="font-medium text-gray-900">{vendor.Ticker_Symbol}</span>
                               {vendor.Fax && (
                                 <a 
-                                  href={`tel:${vendor.Fax}`} 
+                                  href={`tel:${vendor.Fax.replace(/\D/g, '')}`} 
                                   className="text-gray-500 hover:text-brand-red text-xs mt-0.5" 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
+                                    registerCallClick({
+                                      entityId: vendor.id,
+                                      entityType: 'Accounts',
+                                      name: `${vendor.Account_Name} (${vendor.Ticker_Symbol})`
+                                    });
                                   }}
                                 >
                                   {vendor.Fax}
@@ -448,23 +504,49 @@ export default function VendorsPage() {
                             </a>
                           </div>
                         )}
-                        {vendor.Ticker_Symbol && (
+                        {vendor.parsedPocs && vendor.parsedPocs.length > 0 ? (
+                          vendor.parsedPocs.map((poc: any, pIdx: number) => (
+                            <div key={poc.id || pIdx} className="flex flex-col">
+                              <span className="text-xs text-gray-500">POC: {poc.name || 'Contact'}</span>
+                              {poc.phone && (
+                                <a 
+                                  href={`tel:${poc.phone.replace(/\D/g, '')}`} 
+                                  className="text-gray-700 hover:text-brand-red font-medium" 
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    registerCallClick({
+                                      entityId: vendor.id,
+                                      entityType: 'Accounts',
+                                      name: poc.name ? `${vendor.Account_Name} (${poc.name})` : vendor.Account_Name
+                                    });
+                                  }}
+                                >
+                                  {poc.phone}
+                                </a>
+                              )}
+                            </div>
+                          ))
+                        ) : vendor.Ticker_Symbol ? (
                           <div className="flex flex-col">
                             <span className="text-xs text-gray-500">POC: {vendor.Ticker_Symbol}</span>
                             {vendor.Fax && (
                               <a 
-                                href={`tel:${vendor.Fax}`} 
-                                className="text-gray-700" 
+                                href={`tel:${vendor.Fax.replace(/\D/g, '')}`} 
+                                className="text-gray-700 hover:text-brand-red font-medium" 
                                 onClick={e => {
                                   e.stopPropagation();
-                                  registerCallClick({ entityId: vendor.id, entityType: 'Accounts', name: vendor.Account_Name });
+                                  registerCallClick({
+                                    entityId: vendor.id,
+                                    entityType: 'Accounts',
+                                    name: `${vendor.Account_Name} (${vendor.Ticker_Symbol})`
+                                  });
                                 }}
                               >
                                 {vendor.Fax}
                               </a>
                             )}
                           </div>
-                        )}
+                        ) : null}
                         {cityState && (
                           <div className="flex flex-col col-span-2">
                             <span className="text-xs text-gray-500">Location</span>
