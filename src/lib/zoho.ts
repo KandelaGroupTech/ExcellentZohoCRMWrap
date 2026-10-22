@@ -475,8 +475,117 @@ export async function deleteContact(id: string) {
   return deleteRecord('Contacts', id);
 }
 
+export async function fetchDeal(dealId: string) {
+  const token = await getAccessToken();
+  const domain = 'https://www.zohoapis.com';
+
+  const fields = 'Deal_Name,Amount,Stage,Account_Name,Contact_Name,Closing_Date,Description';
+  const response = await fetch(`${domain}/crm/v6/Deals/${dealId}?fields=${fields}`, {
+    method: 'GET',
+    headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+    cache: 'no-store'
+  });
+
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.data?.[0] || null;
+}
+
+export async function resolveContactLookup(contactInput: any, accountInput?: any): Promise<{ id: string } | null> {
+  if (!contactInput) return null;
+
+  if (typeof contactInput === 'object' && contactInput?.id) {
+    return { id: String(contactInput.id) };
+  }
+
+  const str = String(contactInput).trim();
+  if (!str) return null;
+
+  if (/^\d{15,22}$/.test(str)) {
+    return { id: str };
+  }
+
+  try {
+    const token = await getAccessToken();
+    const domain = 'https://www.zohoapis.com';
+
+    // Search by Full_Name in Zoho Contacts
+    const searchRes = await fetch(`${domain}/crm/v6/Contacts/search?criteria=(Full_Name:equals:${encodeURIComponent(str)})`, {
+      headers: { 'Authorization': `Zoho-oauthtoken ${token}` },
+      cache: 'no-store'
+    });
+
+    if (searchRes.ok && searchRes.status !== 204) {
+      const searchData = await searchRes.json();
+      if (Array.isArray(searchData.data) && searchData.data.length > 0) {
+        return { id: searchData.data[0].id };
+      }
+    }
+
+    // Fallback: search all contacts in memory
+    const allContacts = await fetchContacts();
+    const matching = allContacts.find((c: any) => 
+      `${c.First_Name || ''} ${c.Last_Name || ''}`.trim().toLowerCase() === str.toLowerCase()
+    );
+    if (matching) {
+      return { id: matching.id };
+    }
+
+    // Auto-create new contact in Zoho if not found, with First & Last name
+    const parts = str.split(/\s+/);
+    const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : '';
+    const lastName = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+
+    let acctPayload: any = undefined;
+    if (accountInput) {
+      if (typeof accountInput === 'object' && accountInput?.id) {
+        acctPayload = { id: accountInput.id };
+      } else if (typeof accountInput === 'string' && /^\d{15,22}$/.test(accountInput.trim())) {
+        acctPayload = { id: accountInput.trim() };
+      } else if (typeof accountInput === 'string' && accountInput.trim()) {
+        acctPayload = accountInput.trim();
+      }
+    }
+
+    const created = await createContact({
+      First_Name: firstName,
+      Last_Name: lastName,
+      Account_Name: acctPayload,
+      Email: '',
+      Phone: ''
+    });
+
+    if (created?.id) {
+      return { id: created.id };
+    }
+  } catch (err) {
+    console.error('Error resolving contact lookup for deal:', err);
+  }
+
+  return null;
+}
+
 export async function createDeal(data: { Deal_Name: string, Account_Name?: any, Contact_Name?: any, Amount: number, Stage: string, Closing_Date: string }) {
-  return createRecord('Deals', data);
+  const payload: any = { ...data };
+
+  if (data.Contact_Name) {
+    const contactLookup = await resolveContactLookup(data.Contact_Name, data.Account_Name);
+    if (contactLookup) {
+      payload.Contact_Name = contactLookup;
+    } else {
+      delete payload.Contact_Name;
+    }
+  }
+
+  if (data.Account_Name) {
+    if (typeof data.Account_Name === 'object' && data.Account_Name?.id) {
+      payload.Account_Name = { id: String(data.Account_Name.id) };
+    } else if (typeof data.Account_Name === 'string' && /^\d{15,22}$/.test(data.Account_Name.trim())) {
+      payload.Account_Name = { id: data.Account_Name.trim() };
+    }
+  }
+
+  return createRecord('Deals', payload);
 }
 
 export async function deleteDeal(id: string) {
@@ -484,7 +593,28 @@ export async function deleteDeal(id: string) {
 }
 
 export async function updateDeal(id: string, data: Partial<{ Deal_Name: string, Amount: number, Stage: string, Closing_Date: string, Description: string, Account_Name: any, Contact_Name: any }>) {
-  return updateRecord('Deals', id, data);
+  const payload: any = { ...data };
+
+  if (data.Contact_Name !== undefined) {
+    if (data.Contact_Name === null || data.Contact_Name === '') {
+      payload.Contact_Name = null;
+    } else {
+      const contactLookup = await resolveContactLookup(data.Contact_Name, data.Account_Name);
+      if (contactLookup) {
+        payload.Contact_Name = contactLookup;
+      }
+    }
+  }
+
+  if (data.Account_Name) {
+    if (typeof data.Account_Name === 'object' && data.Account_Name?.id) {
+      payload.Account_Name = { id: String(data.Account_Name.id) };
+    } else if (typeof data.Account_Name === 'string' && /^\d{15,22}$/.test(data.Account_Name.trim())) {
+      payload.Account_Name = { id: data.Account_Name.trim() };
+    }
+  }
+
+  return updateRecord('Deals', id, payload);
 }
 
 export async function createLead(data: { First_Name: string, Last_Name: string, Company: string, Email: string, Phone: string }) {
@@ -504,6 +634,28 @@ export async function updateDealStage(dealId: string, stage: string) {
   const token = await getAccessToken();
   const domain = 'https://www.zohoapis.com';
 
+  let contactLookup: { id: string } | null = null;
+  if (stage === 'Closed Won') {
+    try {
+      const currentDeal = await fetchDeal(dealId);
+      if (!currentDeal?.Contact_Name && currentDeal?.Account_Name?.id) {
+        const acctContacts = await fetchContactsForAccount(currentDeal.Account_Name.id);
+        if (acctContacts && acctContacts.length > 0) {
+          contactLookup = { id: acctContacts[0].id };
+        }
+      }
+    } catch (e) {
+      console.error('Failed to auto-link contact on stage update to Closed Won:', e);
+    }
+  }
+
+  const dealPayload: any = { 
+    id: dealId, 
+    Stage: stage,
+    ...(stage === 'Closed Won' ? { Closing_Date: new Date().toISOString().split('T')[0] } : {}),
+    ...(contactLookup ? { Contact_Name: contactLookup } : {})
+  };
+
   const response = await fetch(`${domain}/crm/v6/Deals`, {
     method: 'PUT',
     headers: { 
@@ -511,12 +663,8 @@ export async function updateDealStage(dealId: string, stage: string) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ 
-        data: [{ 
-          id: dealId, 
-          Stage: stage,
-          ...(stage === 'Closed Won' ? { Closing_Date: new Date().toISOString().split('T')[0] } : {})
-        }] 
-      })
+      data: [dealPayload] 
+    })
   });
 
   const responseData = await response.json();

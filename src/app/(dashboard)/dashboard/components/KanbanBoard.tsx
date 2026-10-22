@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUrlState } from '@/hooks/useUrlState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search, Paperclip, Archive, ArchiveRestore, Columns, RotateCcw, Building2, Calendar } from 'lucide-react';
+import { Loader2, CheckSquare, ChevronRight, ChevronLeft, ChevronDown, Search, Paperclip, Archive, ArchiveRestore, Columns, RotateCcw, Building2, Calendar, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DealDetailModal from './DealDetailModal';
 
@@ -412,9 +412,15 @@ export default function KanbanBoard() {
                     </div>
 
                     {deal.Account_Name?.name && (
-                      <p className="text-xs text-gray-600 flex items-center gap-1.5 mb-2">
+                      <p className="text-xs text-gray-600 flex items-center gap-1.5 mb-1">
                         <Building2 className="w-3.5 h-3.5 text-gray-400" />
                         <span className="truncate">{deal.Account_Name.name}</span>
+                      </p>
+                    )}
+                    {deal.Contact_Name?.name && (
+                      <p className="text-[11px] text-gray-500 flex items-center gap-1 mb-2">
+                        <User className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span className="truncate">{deal.Contact_Name.name}</span>
                       </p>
                     )}
 
@@ -489,7 +495,15 @@ export default function KanbanBoard() {
                         )}
                         <h4 className="text-sm font-bold text-gray-900 mb-2 pr-16 leading-tight">{deal.Deal_Name}</h4>
                         {deal.Account_Name?.name && (
-                          <p className="text-xs text-gray-600 mb-3 line-clamp-1">{deal.Account_Name.name}</p>
+                          <p className="text-xs text-gray-600 mb-1 line-clamp-1">{deal.Account_Name.name}</p>
+                        )}
+                        {deal.Contact_Name?.name ? (
+                          <p className="text-[11px] text-gray-500 mb-3 flex items-center gap-1 line-clamp-1">
+                            <User className="w-3 h-3 text-gray-400 shrink-0" />
+                            <span>{deal.Contact_Name.name}</span>
+                          </p>
+                        ) : (
+                          <div className="mb-2" />
                         )}
                         <div className="flex items-center justify-between mt-1">
                           <div className="flex items-center space-x-2">
@@ -601,7 +615,15 @@ export default function KanbanBoard() {
                     )}
                     <h4 className="text-sm font-bold text-gray-900 mb-2 pr-16">{deal.Deal_Name}</h4>
                     {deal.Account_Name?.name && (
-                      <p className="text-xs text-gray-600 mb-3">{deal.Account_Name.name}</p>
+                      <p className="text-xs text-gray-600 mb-1">{deal.Account_Name.name}</p>
+                    )}
+                    {deal.Contact_Name?.name ? (
+                      <p className="text-[11px] text-gray-500 mb-3 flex items-center gap-1">
+                        <User className="w-3 h-3 text-gray-400 shrink-0" />
+                        <span>{deal.Contact_Name.name}</span>
+                      </p>
+                    ) : (
+                      <div className="mb-2" />
                     )}
                     <div className="flex items-center justify-between mt-1">
                       <div className="flex items-center space-x-2">

@@ -346,6 +346,15 @@ export default function ContactSidePanel({ contact, isOpen, onClose, onEdit, onD
 
         </div>
       </div>
+
+      {isDealModalOpen && (
+        <CreateDealModal
+          isOpen={isDealModalOpen}
+          onClose={() => setIsDealModalOpen(false)}
+          contactId={contact?.id}
+          accountId={typeof contact?.Account_Name === 'object' ? contact?.Account_Name?.id : undefined}
+        />
+      )}
     </>,
     document.body
   );

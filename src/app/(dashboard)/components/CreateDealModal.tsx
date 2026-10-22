@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import Modal from './Modal';
@@ -36,6 +36,22 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
     enabled: isOpen && !contactId
   });
 
+  const filteredContacts = useMemo(() => {
+    if (!contacts) return [];
+    const targetAcctId = accountId;
+    const targetAcctName = formData.Account_Name.trim().toLowerCase();
+    const matchingAcct = targetAcctName ? accounts?.find((a: any) => a.Account_Name?.toLowerCase() === targetAcctName) : null;
+    const acctIdToMatch = targetAcctId || matchingAcct?.id;
+
+    return [...contacts].sort((a: any, b: any) => {
+      const aMatch = acctIdToMatch ? (a.Account_Name?.id === acctIdToMatch || a.Account_Name?.name?.toLowerCase() === targetAcctName) : false;
+      const bMatch = acctIdToMatch ? (b.Account_Name?.id === acctIdToMatch || b.Account_Name?.name?.toLowerCase() === targetAcctName) : false;
+      if (aMatch && !bMatch) return -1;
+      if (!aMatch && bMatch) return 1;
+      return 0;
+    });
+  }, [contacts, accounts, accountId, formData.Account_Name]);
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const payload: any = {
@@ -53,11 +69,13 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
         }
       }
       if (contactId) {
-        payload.Contact_Name = contactId;
+        payload.Contact_Name = { id: contactId };
       } else if (data.Contact_Name.trim()) {
-        const matchingContact = contacts?.find((c: any) => `${c.First_Name || ''} ${c.Last_Name || ''}`.trim() === data.Contact_Name.trim());
+        const matchingContact = contacts?.find((c: any) => 
+          `${c.First_Name || ''} ${c.Last_Name || ''}`.trim().toLowerCase() === data.Contact_Name.trim().toLowerCase()
+        );
         if (matchingContact) {
-          payload.Contact_Name = matchingContact.id;
+          payload.Contact_Name = { id: matchingContact.id };
         } else {
           payload.Contact_Name = data.Contact_Name.trim();
         }
@@ -128,19 +146,28 @@ export default function CreateDealModal({ isOpen, onClose, accountId, contactId,
         
         {!contactId && (
           <div>
-            <label className="block text-sm font-medium text-gray-700">Contact (Optional)</label>
+            <label className="block text-sm font-medium text-gray-700">Contact</label>
             <input 
               type="text" 
               list="contacts-list"
               value={formData.Contact_Name} 
               onChange={e => setFormData({...formData, Contact_Name: e.target.value})} 
-              placeholder="Select or type a new contact..."
+              placeholder="Select or type contact name..."
               className="mt-1 block w-full bg-white text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-brand-red focus:ring-brand-red sm:text-sm p-2 border" 
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Select or enter a contact so customer notification alerts upon deal closing are properly addressed.
+            </p>
             <datalist id="contacts-list">
-              {contacts?.map((c: any) => (
-                <option key={c.id} value={`${c.First_Name || ''} ${c.Last_Name || ''}`.trim()} />
-              ))}
+              {filteredContacts.map((c: any) => {
+                const fullName = `${c.First_Name || ''} ${c.Last_Name || ''}`.trim();
+                const acct = typeof c.Account_Name === 'object' ? c.Account_Name?.name : c.Account_Name;
+                return (
+                  <option key={c.id} value={fullName}>
+                    {acct ? `${fullName} (${acct})` : fullName}
+                  </option>
+                );
+              })}
             </datalist>
           </div>
         )}
